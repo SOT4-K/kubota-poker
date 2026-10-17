@@ -338,6 +338,7 @@ details.arch summary{cursor:pointer;color:var(--ink-3);font-size:13px;font-weigh
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tabbar-h) + 86px + env(safe-area-inset-bottom,0px));z-index:60;
   background:var(--ink);color:var(--felt);font-weight:700;font-size:13px;padding:10px 16px;border-radius:999px;box-shadow:0 10px 24px rgba(0,0,0,.5);
   max-width:calc(100% - 32px);text-align:center;animation:up .25s ease both}
+.toast-act{background:none;border:0;margin-left:10px;padding:2px 0;color:#7a1220;font-weight:800;font-size:13px;text-decoration:underline;text-underline-offset:3px}
 .loading{display:flex;flex-direction:column;align-items:center;gap:14px;padding:50px 0;color:var(--ink-3);font-size:13px}
 .spin{animation:spin 1.6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -421,11 +422,6 @@ const cls = n => n > 0 ? 'pos' : n < 0 ? 'neg' : 'zero';
 function dparts(ds){ const [y,m,d]=(ds||'').split('-').map(Number); const dt=new Date(y,(m||1)-1,d||1); return {y,m,d,wd:WD[dt.getDay()]}; }
 const dshort = ds => { const p=dparts(ds); return `${p.m}/${p.d}`; };
 const dlong = ds => { const p=dparts(ds); return `${p.y}年${p.m}月${p.d}日（${p.wd}）`; };
-function deltaPill(n, suffix=''){
-  if (n == null) return '<span class="pill flat">初参加</span>';
-  const c = n>0?'up':n<0?'down':'flat', a = n>0?'▲':n<0?'▼':'—';
-  return `<span class="pill ${c}">${a} ${fmt(Math.abs(n))}${suffix}</span>`;
-}
 
 /* ================= drawings ================= */
 function chipSVG(chip, size=40, label=''){
@@ -658,10 +654,12 @@ function makeDemo(){
 }
 
 /* ================= toast ================= */
-let toastT;
-function toast(msg){
-  const h = $('#toastHost'); h.innerHTML = `<div class="toast">${esc(msg)}</div>`;
-  clearTimeout(toastT); toastT = setTimeout(()=>{ h.innerHTML=''; }, 2600);
+let toastT, toastFn = null;
+// action = {label, fn}：通知の中にボタン（例：取り消す）を出す。押せるよう少し長めに表示する
+function toast(msg, action){
+  const h = $('#toastHost'); h.innerHTML = `<div class="toast">${esc(msg)}${action?`<button class="toast-act" type="button" data-act="toast-act">${esc(action.label)}</button>`:''}</div>`;
+  toastFn = action ? action.fn : null;
+  clearTimeout(toastT); toastT = setTimeout(()=>{ h.innerHTML=''; toastFn = null; }, action ? 6000 : 2600);
 }
 
 /* ================= views ================= */
@@ -736,7 +734,7 @@ function homeView(){
       </button>
       ${res.map((r,i)=>`<div class="res">${avatar(pm[r.pid],true)}
         <div class="nm">${esc(pm[r.pid]?.name||'（削除済み）')}<small>通算 ${sgn(r.after)}円</small></div>
-        <div class="r"><b class="${cls(r.profit)}">${sgn(r.profit)}<span class="yen">円</span></b>${r.prevProfit==null?'<span class="pill flat">初参加</span>':`<span class="pill ${r.profit-r.prevProfit>0?'up':r.profit-r.prevProfit<0?'down':'flat'}">前回比 ${sgn(r.profit-r.prevProfit)}</span>`}</div>
+        <div class="r"><b class="${cls(r.profit)}">${sgn(r.profit)}<span class="yen">円</span></b></div>
       </div>`).join('')}
     </section>`;
   }
@@ -760,7 +758,7 @@ function liveCards(){
       <div class="datebox"><small>${p.m}月</small><b>${p.d}</b><span>${p.wd}曜</span></div>
       <div class="mid">
         <div class="line"><span class="pill live">ゲーム中</span><span class="stack">${ids.slice(0,6).map(id=>avatar(pm[id],true)).join('')}</span>${ids.length}人</div>
-        ${s.memo?`<div class="memo">${esc(s.memo)}</div>`:''}
+        <div class="memo">${hm(liveStart(s))} 開始${s.memo?' ・ '+esc(s.memo):''}</div>
       </div>
       <div class="end"><small>TOTAL Buy-in</small><b>${fmt(t.buy)}</b></div>
     </button>`;
@@ -862,16 +860,12 @@ function membersView(){
   ${act.length ? `<section class="card">${act.map(row).join('')}</section>` : `<section class="card pad"><p class="note">まだメンバーがいません。上の欄から名前を追加してください。</p></section>`}
   ${arch.length ? `<details class="arch"><summary>非表示のメンバー（${arch.length}）</summary><section class="card">${arch.map(row).join('')}</section></details>`:''}
   <section class="card pad" style="display:flex;flex-direction:column;gap:12px">
-    <div class="sec-head"><h2>チップのレート</h2></div>
-    <div class="rates">${CHIPS.map(c=>`<div>${chipSVG(c,46,String(c.v))}<b>${c.v}円</b><small>${c.name}チップ</small></div>`).join('')}</div>
-  </section>
-  <section class="card pad" style="display:flex;flex-direction:column;gap:12px">
     <div class="sec-head"><h2>共有とデータ</h2></div>
     <p class="note">${S.mode==='shared' ? '記録は家族共有のスプレッドシートに保存されます。<b>このアプリのURLを家族に送り</b>、Safariで開いて「共有 → ホーム画面に追加」してもらえば、ログインなしで全員が記録できます。' : 'いまはこの端末のブラウザにだけ保存しています。家族と共有するには、config.js にスプレッドシートのURLを設定してください（手順は README にあります）。'}</p>
     <div class="btn-row">
       <button class="btn" type="button" data-act="copy-url">アプリのURLをコピー</button>
       <button class="btn" type="button" data-act="export">CSVで書き出す</button>
-      <button class="btn" type="button" data-act="${S.demo?'demo-off':'demo-on'}">${S.demo?'サンプルを終了':'サンプルを見る'}</button>
+      ${S.demo ? '<button class="btn" type="button" data-act="demo-off">サンプルを終了</button>' : !S.real.sessions.length ? '<button class="btn" type="button" data-act="demo-on">サンプルを見る</button>' : ''}
     </div>
   </section>`;
 }
@@ -1001,7 +995,6 @@ function sessionSheet(sh, lv){
       ${res.map((r,i)=>`<div class="dres">${avatar(pm[r.pid])}
         <div class="meta"><b>${i===0&&r.profit>0?'<span class="pill first" style="margin-right:6px">トップ</span>':''}${esc(pm[r.pid]?.name||'（削除済み）')}</b>
           <small>TOTAL Buy-in ${fmt(r.buy)} → 終了時 ${fmt(r.out)}</small>${buysLine(s.entries[r.pid])}
-          <div class="pills">${r.prevProfit==null?'<span class="pill flat">初参加</span>':`<span class="pill flat">前回 ${sgn(r.prevProfit)}</span>${deltaPill(r.profit-r.prevProfit)}`}</div>
         </div>
         <div class="r"><b class="${cls(r.profit)}">${sgn(r.profit)}</b><small>通算 <span class="${cls(r.after)}">${sgn(r.after)}</span></small></div>
       </div>`).join('')}
@@ -1018,16 +1011,17 @@ function sessionSheet(sh, lv){
 const delLink = s => S.canWrite ? `<div style="display:flex;justify-content:center"><button class="btn danger sm" type="button" data-act="del-session" data-id="${s.id}">この記録を削除</button></div>` : '';
 /* --- live game（ゲーム中）: ＋Buy-in でその時刻の Buy-in をすぐ保存する --- */
 function liveSheet(s, lv){
-  const pm = playerMap(), t = sessionTotals(s), ids = Object.keys(s.entries||{});
+  const pm = playerMap(), t = sessionTotals(s), ids = Object.keys(s.entries||{}), st = liveStart(s);
+  const m = Math.max(0, Math.floor((Date.now()-st)/60000));
   const body = `
-    <div class="h-sub" style="margin:0"><span class="pill live">ゲーム中</span> ${s.memo?esc(s.memo)+' ・ ':''}${ids.length}人 ・ TOTAL Buy-in ${fmt(t.buy)}円</div>
+    <div class="h-sub" style="margin:0"><span class="pill live">ゲーム中</span> ${hm(st)} 開始 ・ ${m>=60?`${Math.floor(m/60)}時間${m%60}分`:`${m}分`}経過<br>${s.memo?esc(s.memo)+' ・ ':''}${ids.length}人 ・ TOTAL Buy-in ${fmt(t.buy)}円</div>
     <section>
       ${ids.map(pid=>{ const e = s.entries[pid]; return `<div class="dres">${avatar(pm[pid])}
         <div class="meta"><b>${esc(pm[pid]?.name||'（削除済み）')}</b>${buysLine(e) || `<small>${fmt(+e.buyIn||0)}</small>`}</div>
         <div class="r"><small>TOTAL Buy-in</small><b>${fmt(+e.buyIn||0)}</b>${S.canWrite?`<button class="btn sm" type="button" data-act="live-buy" data-id="${s.id}" data-pid="${pid}" aria-label="${esc(pm[pid]?.name)}にBuy-inを追加">＋Buy-in</button>`:''}</div>
       </div>`; }).join('')}
     </section>
-    <p class="hint">＋Buy-in で、押した時刻に ${fmt(defaultBuy())}円 を記録します。押し間違い・参加者の追加は「編集」から。</p>${delLink(s)}`;
+    <p class="hint">＋Buy-in で、押した時刻に ${fmt(defaultBuy())}円 を記録します。押し間違いはすぐ出る「取り消す」で、参加者の追加は「編集」から。</p>${delLink(s)}`;
   const foot = S.canWrite ? `<div class="btn-row"><button class="btn" type="button" data-act="edit-session" data-id="${s.id}">編集</button><button class="btn gold" type="button" data-act="edit-session" data-id="${s.id}" data-finish="1">終了してチップを入力</button></div>` : '';
   return sheetFrame(dlong(s.date), body, foot, lv);
 }
@@ -1036,10 +1030,20 @@ async function liveBuy(sid, pid){
   const s = data().sessions.find(x=>x.id===sid); if (!s || !s.entries[pid]) return;
   const obj = JSON.parse(JSON.stringify(s)), e = obj.entries[pid];
   if (!e.buys) e.buys = (+e.buyIn||0) > 0 ? [{amt:+e.buyIn, at:obj.createdAt||Date.now()}] : [];
-  const amt = defaultBuy();
-  e.buys.push({amt, at:Date.now()}); e.buyIn = (+e.buyIn||0) + amt; obj.updatedAt = Date.now();
-  try { await write('sessions', obj); toast(`${playerMap()[pid]?.name||''} に ${fmt(amt)}円 の Buy-in を記録しました`); } catch(e){}
+  const amt = defaultBuy(), at = Date.now();
+  e.buys.push({amt, at}); e.buyIn = (+e.buyIn||0) + amt; obj.updatedAt = at;
+  try { await write('sessions', obj); toast(`${playerMap()[pid]?.name||''} に ${fmt(amt)}円 の Buy-in を記録しました`, {label:'取り消す', fn:()=>undoBuy(sid, pid, at)}); } catch(e){}
 }
+async function undoBuy(sid, pid, at){
+  if (S.mode==='shared' && !S.demo) await pull();
+  const s = data().sessions.find(x=>x.id===sid), i = s?.entries[pid]?.buys ? s.entries[pid].buys.findIndex(x=>x.at===at) : -1;
+  if (i < 0){ toast('取り消せませんでした（すでに変更されています）'); return; }
+  const obj = JSON.parse(JSON.stringify(s)), e = obj.entries[pid];
+  const [x] = e.buys.splice(i, 1); e.buyIn = Math.max(0, (+e.buyIn||0) - x.amt); obj.updatedAt = Date.now();
+  try { await write('sessions', obj); toast('取り消しました'); } catch(err){}
+}
+// ゲームの開始時刻：最初の Buy-in の時刻（無ければ記録を作った時刻）
+const liveStart = s => Math.min(s.createdAt||Date.now(), ...Object.values(s.entries||{}).flatMap(e=>(e.buys||[]).map(x=>x.at)));
 
 /* --- editor --- */
 function defaultBuy(){ const v = +lsGet('kubota-default-buyin'); return v>0 ? v : 1000; }
@@ -1168,7 +1172,7 @@ function playerSheet(sh, lv){
 /* ================= render ================= */
 function render(){
   syncPill();
-  $('#brand').innerHTML = `${logoSVG(40)}<div class="wordmark"><b>PokerLog</b><span>POKER LEDGER</span></div>`;
+  $('#brand').innerHTML = `${logoSVG(40)}<div class="wordmark"><b>PokerLog</b></div>`;
   $('#tabs').innerHTML = TABS.map(t=>`<button class="tab" type="button" data-act="goto" data-tab="${t.id}" ${S.tab===t.id?'aria-current="page"':''}><svg viewBox="0 0 24 24" aria-hidden="true">${t.icon}</svg>${t.label}</button>`).join('');
   const v = $('#view');
   const prevTab = v.dataset.tab;
@@ -1238,6 +1242,7 @@ document.addEventListener('click', async ev => {
       setBuy(e, (+e.buyIn||0) + step * (+b.dataset.d)); sh.confirm=false; rerenderEditor(); break;
     }
     case 'live-buy': if (S.canWrite) await liveBuy(id, b.dataset.pid); break;
+    case 'toast-act': { const f = toastFn; toastFn = null; clearTimeout(toastT); $('#toastHost').innerHTML = ''; if (f) await f(); break; }
     case 'ed-chips': { const sh=topSheet(); const e=sh.draft.entries[id]; openSheet({type:'chips', pid:id, counts:{...(e.chips||{w:0,r:0,g:0,b:0})}}); break; }
     case 'ed-save': saveDraft(topSheet()); break;
     case 'cc': { const sh=topSheet(); const k=b.dataset.k; sh.counts[k] = Math.max(0,(+sh.counts[k]||0)+(+b.dataset.d)); const inp=$('#cc-'+k); if(inp) inp.value=sh.counts[k]; refreshChips(sh); break; }
