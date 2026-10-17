@@ -30,6 +30,7 @@
   --f-body:"Zen Kaku Gothic New","Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
   --f-num:"Barlow Condensed","Zen Kaku Gothic New",system-ui,sans-serif;
   --tabbar-h:66px;
+  --vp-gap:0px; /* ホーム画面のアプリで、画面の下端と表示領域の下端がずれる分（JS で測る） */
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -193,7 +194,7 @@ main{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;oversc
 .game .end b{font-family:var(--f-num);font-size:19px;font-weight:600}
 
 /* tabs bar */
-.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:25;
+.tabbar{position:fixed;left:0;right:0;bottom:calc(-1 * var(--vp-gap));z-index:25;
   padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px));
   padding-top:6px;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));
   background:rgba(9,26,21,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--rail-soft)}
@@ -202,7 +203,7 @@ main{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;oversc
 .tab svg{width:24px;height:24px}
 .tab[aria-current="page"]{color:var(--brass-2)}
 .tab[aria-current="page"] svg{filter:drop-shadow(0 0 8px rgba(216,180,106,.45))}
-.fab{position:fixed;z-index:24;right:max(18px,calc(env(safe-area-inset-right,0px) + 18px));bottom:calc(var(--tabbar-h) + 16px + env(safe-area-inset-bottom,0px));
+.fab{position:fixed;z-index:24;right:max(18px,calc(env(safe-area-inset-right,0px) + 18px));bottom:calc(var(--tabbar-h) + 16px + env(safe-area-inset-bottom,0px) - var(--vp-gap));
   height:56px;padding:0 20px 0 14px;border-radius:999px;border:1px solid #b8934a;display:flex;align-items:center;gap:8px;
   background:linear-gradient(180deg,var(--brass-2),var(--brass));color:var(--brass-ink);font-weight:800;font-size:15px;
   box-shadow:0 12px 26px -8px rgba(0,0,0,.7),0 0 0 4px rgba(12,33,27,.6)}
@@ -210,9 +211,9 @@ main{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;oversc
 @media (min-width:640px){.fab{right:calc(50% - 280px + 0px)}}
 
 /* sheets */
-.scrim{position:fixed;inset:0;z-index:40;background:rgba(3,10,8,.62);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);animation:fade .2s ease both}
+.scrim{position:fixed;inset:0 0 calc(-1 * var(--vp-gap)) 0;z-index:40;background:rgba(3,10,8,.62);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);animation:fade .2s ease both}
 @keyframes fade{from{opacity:0}to{opacity:1}}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;max-height:calc(100% - 28px - env(safe-area-inset-top,0px));display:flex;flex-direction:column;
+.sheet{position:fixed;left:0;right:0;bottom:calc(-1 * var(--vp-gap));z-index:41;max-height:calc(100% - 28px - env(safe-area-inset-top,0px) + var(--vp-gap));display:flex;flex-direction:column;
   background:linear-gradient(180deg,var(--felt-3),var(--felt-2) 140px);border-top:1px solid var(--brass);border-radius:22px 22px 0 0;
   box-shadow:0 -20px 50px rgba(0,0,0,.55);animation:up .28s cubic-bezier(.2,.8,.2,1) both}
 .sheet.lv2{z-index:43} .scrim.lv2{z-index:42}
@@ -344,7 +345,7 @@ main{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;oversc
 .note b{color:var(--ink)}
 details.arch summary{cursor:pointer;color:var(--ink-3);font-size:13px;font-weight:700;padding:8px 2px}
 
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tabbar-h) + 86px + env(safe-area-inset-bottom,0px));z-index:60;
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tabbar-h) + 86px + env(safe-area-inset-bottom,0px) - var(--vp-gap));z-index:60;
   background:var(--ink);color:var(--felt);font-weight:700;font-size:13px;padding:10px 16px;border-radius:999px;box-shadow:0 10px 24px rgba(0,0,0,.5);
   max-width:calc(100% - 32px);text-align:center;animation:up .25s ease both}
 .toast-act{background:none;border:0;margin-left:10px;padding:2px 0;color:#7a1220;font-weight:800;font-size:13px;text-decoration:underline;text-underline-offset:3px}
@@ -1372,6 +1373,18 @@ async function copyUrl(){
   try { await navigator.clipboard.writeText(url); toast('URLをコピーしました。家族に送ってください'); }
   catch(e){ toast(url); }
 }
+
+/* ================= viewport gap =================
+   iPhone のホーム画面から開いたとき、表示領域が画面より短く測られ、下のタブの下に余白ができることがある。
+   その差（画面の高さ − 表示領域の高さ）を測り、下に固定した部品をその分だけ下げる。 */
+function fixViewportGap(){
+  const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+  const gap = standalone && innerHeight > innerWidth ? screen.height - innerHeight : 0;
+  document.documentElement.style.setProperty('--vp-gap', (gap > 0 && gap < 120 ? gap : 0) + 'px');
+}
+fixViewportGap();
+window.addEventListener('resize', fixViewportGap);
+window.addEventListener('orientationchange', () => setTimeout(fixViewportGap, 300));
 
 /* ================= boot ================= */
 async function boot(){
