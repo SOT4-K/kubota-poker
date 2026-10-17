@@ -513,7 +513,7 @@ function setBuy(e, total){
 }
 
 /* おすすめのチップ構成：各 Buy-in に buys[i].chips = {w,r,g,b,k}（1人に渡す枚数）を付ける。
-   箱の残り = CHIP_STOCK − そのゲームで配った枚数。ブラインド 1/2 に合わせて白・赤を 10 枚ずつ必ず入れる。 */
+   箱の残り = CHIP_STOCK − そのゲームで配った枚数。ブラインド 1/2 に合わせて白 20 枚・赤 14 枚を先に入れる（SB の 1 や 6・8 などの端数を払えるように）。 */
 function boxLeft(s){
   const left = {...CHIP_STOCK};
   for (const e of Object.values(s.entries||{})) for (const x of e.buys||[]) for (const k in x.chips||{}) left[k] -= x.chips[k];
@@ -523,7 +523,7 @@ function suggestChips(amount, n, avail){
   const per = Object.fromEntries(CHIPS.map(c=>[c.k,0])), by = k => CHIPS.find(c=>c.k===k), desc = [...CHIPS].sort((a,b)=>b.v-a.v);
   let left = amount;
   const give = (c, cnt) => { cnt = Math.max(0, Math.min(cnt, Math.floor((avail[c.k]||0)/n) - per[c.k], Math.floor(left/c.v))); per[c.k] += cnt; left -= cnt*c.v; };
-  give(by('w'), 10); give(by('r'), 10);
+  give(by('w'), 20); give(by('r'), 14);
   give(by('g'), Math.min(25, Math.round(amount*.15/10)));
   give(by('b'), Math.round(amount*.3/50));
   desc.filter(c=>c.v <= amount/4).forEach(c=>give(c, Infinity));  // 1 枚で Buy-in の 1/4 を超える大きいチップは避ける
