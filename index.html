@@ -271,6 +271,9 @@ main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px
 .buys i{font-style:normal;color:var(--ink-3)}
 .buys em{font-style:normal;color:var(--ink-3);margin-right:2px}
 .pill.live{background:rgba(242,193,78,.15);color:var(--warn)}
+.chipmix{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:5px;font-size:12px;color:var(--ink-2)}
+.chipmix span{display:inline-flex;align-items:center;gap:3px}
+.chipmix b{font-family:var(--f-num);font-size:14px;color:var(--ink)}
 .btn.sm{padding:6px 12px;font-size:13px;min-height:0}
 .settle{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .settle li{display:grid;grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr) auto;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:var(--felt);border:1px solid var(--rail);font-weight:700;font-size:14px}
@@ -376,8 +379,11 @@ const CHIPS = [
   {k:'w', name:'白', v:1,   base:'#f3eee4', stripe:'#c9343d', ink:'#3a2a20'},
   {k:'r', name:'赤', v:5,   base:'#c9343d', stripe:'#f3eee4', ink:'#fff'},
   {k:'g', name:'緑', v:10,  base:'#2c9a5b', stripe:'#f3eee4', ink:'#fff'},
-  {k:'b', name:'青', v:100, base:'#2f62c9', stripe:'#f3eee4', ink:'#fff'},
+  {k:'b', name:'青', v:50,  base:'#2f62c9', stripe:'#f3eee4', ink:'#fff'},
+  {k:'k', name:'黒', v:100, base:'#1f1f22', stripe:'#d8b46a', ink:'#fff'},
 ];
+// 家のチップセットの枚数（白150・赤100・緑150・青100・黒50）
+const CHIP_STOCK = {w:150, r:100, g:150, b:100, k:50};
 const PALETTE = ['#e0525a','#4f8fe6','#3fb87a','#e8a33d','#a774e0','#2fb8b8','#e57fb1','#c2b84f','#8aa0c4','#f07c4a'];
 const WD = ['日','月','火','水','木','金','土'];
 const TABS = [
@@ -502,9 +508,42 @@ function setBuy(e, total){
   if (!e.buys){ e.buyIn = total; return; }
   const b = e.buys; let sum = b.reduce((a,x)=>a+x.amt,0);
   if (total > sum) b.push({amt: total-sum, at: Date.now()});
-  while (sum > total && b.length){ const l=b[b.length-1], cut=Math.min(l.amt, sum-total); l.amt-=cut; sum-=cut; if (!l.amt) b.pop(); }
+  while (sum > total && b.length){ const l=b[b.length-1], cut=Math.min(l.amt, sum-total); l.amt-=cut; sum-=cut; delete l.chips; if (!l.amt) b.pop(); }
   e.buyIn = total;
 }
+
+/* おすすめのチップ構成：各 Buy-in に buys[i].chips = {w,r,g,b,k}（1人に渡す枚数）を付ける。
+   箱の残り = CHIP_STOCK − そのゲームで配った枚数。ブラインド 1/2 に合わせて白・赤を 10 枚ずつ必ず入れる。 */
+function boxLeft(s){
+  const left = {...CHIP_STOCK};
+  for (const e of Object.values(s.entries||{})) for (const x of e.buys||[]) for (const k in x.chips||{}) left[k] -= x.chips[k];
+  return left;
+}
+function suggestChips(amount, n, avail){
+  const per = Object.fromEntries(CHIPS.map(c=>[c.k,0])), by = k => CHIPS.find(c=>c.k===k), desc = [...CHIPS].sort((a,b)=>b.v-a.v);
+  let left = amount;
+  const give = (c, cnt) => { cnt = Math.max(0, Math.min(cnt, Math.floor((avail[c.k]||0)/n) - per[c.k], Math.floor(left/c.v))); per[c.k] += cnt; left -= cnt*c.v; };
+  give(by('w'), 10); give(by('r'), 10);
+  give(by('g'), Math.min(25, Math.round(amount*.15/10)));
+  give(by('b'), Math.round(amount*.3/50));
+  desc.filter(c=>c.v <= amount/4).forEach(c=>give(c, Infinity));  // 1 枚で Buy-in の 1/4 を超える大きいチップは避ける
+  desc.forEach(c=>give(c, Infinity));
+  return {per, left};
+}
+// ゲーム中の記録で、まだ構成の無い Buy-in に構成を付ける（同じ額は人数分まとめて公平に割る）
+function assignChips(s){
+  const avail = boxLeft(s), todo = {};
+  for (const e of Object.values(s.entries||{})) for (const x of e.buys||[]) if (!x.chips) (todo[x.amt] = todo[x.amt] || []).push(x);
+  for (const [amt, xs] of Object.entries(todo)){
+    const {per} = suggestChips(+amt, xs.length, avail);
+    xs.forEach(x=>{ x.chips = {...per}; for (const k in per) avail[k] -= per[k]; });
+  }
+}
+function chipsLine(chips){
+  const cs = [...CHIPS].sort((a,b)=>b.v-a.v).filter(c=>(chips||{})[c.k]>0);
+  return cs.length ? `<div class="chipmix">${cs.map(c=>`<span>${chipSVG(c,16)}${c.name}<b>${chips[c.k]}</b></span>`).join('')}</div>` : '';
+}
+const chipsText = chips => [...CHIPS].sort((a,b)=>b.v-a.v).filter(c=>(chips||{})[c.k]>0).map(c=>`${c.name}${chips[c.k]}`).join('・');
 function playerStats(pid, A){
   const h = A.hist[pid] || [];
   const games = h.length, wins = h.filter(x=>x.profit>0).length;
@@ -1016,12 +1055,14 @@ function liveSheet(s, lv){
   const body = `
     <div class="h-sub" style="margin:0"><span class="pill live">ゲーム中</span> ${hm(st)} 開始 ・ ${m>=60?`${Math.floor(m/60)}時間${m%60}分`:`${m}分`}経過<br>${s.memo?esc(s.memo)+' ・ ':''}${ids.length}人 ・ TOTAL Buy-in ${fmt(t.buy)}円</div>
     <section>
-      ${ids.map(pid=>{ const e = s.entries[pid]; return `<div class="dres">${avatar(pm[pid])}
-        <div class="meta"><b>${esc(pm[pid]?.name||'（削除済み）')}</b>${buysLine(e) || `<small>${fmt(+e.buyIn||0)}</small>`}</div>
+      ${ids.map(pid=>{ const e = s.entries[pid], lb = (e.buys||[]).slice(-1)[0], short = lb&&lb.chips ? lb.amt - CHIPS.reduce((a,c)=>a+(lb.chips[c.k]||0)*c.v,0) : 0; return `<div class="dres">${avatar(pm[pid])}
+        <div class="meta"><b>${esc(pm[pid]?.name||'（削除済み）')}</b>${buysLine(e) || `<small>${fmt(+e.buyIn||0)}</small>`}
+          ${lb&&lb.chips?`<small style="margin-top:6px">${hm(lb.at)} に渡すチップ</small>${chipsLine(lb.chips)}${short>0?`<small style="color:var(--warn)">チップが足りません（あと ${fmt(short)}円分）</small>`:''}`:''}</div>
         <div class="r"><small>TOTAL Buy-in</small><b>${fmt(+e.buyIn||0)}</b>${S.canWrite?`<button class="btn sm" type="button" data-act="live-buy" data-id="${s.id}" data-pid="${pid}" aria-label="${esc(pm[pid]?.name)}にBuy-inを追加">＋Buy-in</button>`:''}</div>
       </div>`; }).join('')}
     </section>
-    <p class="hint">＋Buy-in で、押した時刻に ${fmt(defaultBuy())}円 を記録します。押し間違いはすぐ出る「取り消す」で、参加者の追加は「編集」から。</p>${delLink(s)}`;
+    <div><span class="lbl">箱に残っているチップ</span>${chipsLine(boxLeft(s)) || '<p class="hint">ありません</p>'}</div>
+    <p class="hint">＋Buy-in で、押した時刻に ${fmt(defaultBuy())}円 を記録し、渡すチップを出します。押し間違いはすぐ出る「取り消す」で、参加者の追加は「編集」から。</p>${delLink(s)}`;
   const foot = S.canWrite ? `<div class="btn-row"><button class="btn" type="button" data-act="edit-session" data-id="${s.id}">編集</button><button class="btn gold" type="button" data-act="edit-session" data-id="${s.id}" data-finish="1">終了してチップを入力</button></div>` : '';
   return sheetFrame(dlong(s.date), body, foot, lv);
 }
@@ -1032,7 +1073,8 @@ async function liveBuy(sid, pid){
   if (!e.buys) e.buys = (+e.buyIn||0) > 0 ? [{amt:+e.buyIn, at:obj.createdAt||Date.now()}] : [];
   const amt = defaultBuy(), at = Date.now();
   e.buys.push({amt, at}); e.buyIn = (+e.buyIn||0) + amt; obj.updatedAt = at;
-  try { await write('sessions', obj); toast(`${playerMap()[pid]?.name||''} に ${fmt(amt)}円 の Buy-in を記録しました`, {label:'取り消す', fn:()=>undoBuy(sid, pid, at)}); } catch(e){}
+  assignChips(obj);
+  try { await write('sessions', obj); toast(`${playerMap()[pid]?.name||''} に ${fmt(amt)}円：${chipsText(e.buys[e.buys.length-1].chips)}`, {label:'取り消す', fn:()=>undoBuy(sid, pid, at)}); } catch(e){}
 }
 async function undoBuy(sid, pid, at){
   if (S.mode==='shared' && !S.demo) await pull();
@@ -1128,6 +1170,7 @@ async function saveDraft(sh){
   const entries = {};
   d.order.forEach(id=>{ const e=d.entries[id]; entries[id] = {buyIn:+e.buyIn||0, cashOut: e.cashOut===''||e.cashOut==null ? null : +e.cashOut||0, ...(e.chips?{chips:e.chips}:{}), ...(e.buys?{buys:e.buys}:{})}; });
   const obj = {id:d.id, date:d.date, memo:d.memo.trim(), entries, createdAt:d.createdAt, updatedAt:Date.now(), ...(live?{live:true}:{})};
+  if (live) assignChips(obj);
   const wasNew = d.isNew;
   S.sheets = S.sheets.filter(s=>s!==sh);
   try { await write('sessions', obj); } catch(e){ return; }
@@ -1243,7 +1286,7 @@ document.addEventListener('click', async ev => {
     }
     case 'live-buy': if (S.canWrite) await liveBuy(id, b.dataset.pid); break;
     case 'toast-act': { const f = toastFn; toastFn = null; clearTimeout(toastT); $('#toastHost').innerHTML = ''; if (f) await f(); break; }
-    case 'ed-chips': { const sh=topSheet(); const e=sh.draft.entries[id]; openSheet({type:'chips', pid:id, counts:{...(e.chips||{w:0,r:0,g:0,b:0})}}); break; }
+    case 'ed-chips': { const sh=topSheet(); const e=sh.draft.entries[id]; openSheet({type:'chips', pid:id, counts:{...(e.chips||{w:0,r:0,g:0,b:0,k:0})}}); break; }
     case 'ed-save': saveDraft(topSheet()); break;
     case 'cc': { const sh=topSheet(); const k=b.dataset.k; sh.counts[k] = Math.max(0,(+sh.counts[k]||0)+(+b.dataset.d)); const inp=$('#cc-'+k); if(inp) inp.value=sh.counts[k]; refreshChips(sh); break; }
     case 'cc-apply': {
