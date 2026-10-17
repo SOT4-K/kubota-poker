@@ -79,6 +79,12 @@ button{cursor:pointer}
 /* ---------- main ---------- */
 main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   padding-block:18px calc(var(--tabbar-h) + 96px + env(safe-area-inset-bottom,0px))}
+/* ページ全体はスクロールさせず main だけをスクロールする。
+   Safari のツールバーが伸び縮みすると下のタブが上下するので、それを起こさないため */
+html,body{height:100%;overflow:hidden}
+body{display:flex;flex-direction:column;height:100dvh}
+.top{flex:none}
+main{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
 .wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
 .view{display:flex;flex-direction:column;gap:18px;animation:rise .35s ease both}
 @keyframes rise{from{transform:translateY(6px);opacity:.3}to{transform:none;opacity:1}}
@@ -1248,8 +1254,8 @@ document.addEventListener('click', async ev => {
   const b = ev.target.closest('[data-act]'); if (!b) return;
   const a = b.dataset.act, id = b.dataset.id;
   switch (a){
-    case 'goto': S.tab = b.dataset.tab; setHash(); render(); window.scrollTo({top:0}); break;
-    case 'demo-on': S.demoData = makeDemo(); S.demo = true; S.tab='home'; setHash(); render(); window.scrollTo({top:0}); break;
+    case 'goto': S.tab = b.dataset.tab; setHash(); render(); $('main').scrollTo({top:0}); break;
+    case 'demo-on': S.demoData = makeDemo(); S.demo = true; S.tab='home'; setHash(); render(); $('main').scrollTo({top:0}); break;
     case 'demo-off': S.demo = false; S.demoData = null; S.sheets=[]; document.body.style.overflow=''; renderSheets(); render(); break;
     case 'open-session': openSheet({type:'session', id}); break;
     case 'new-session': {
