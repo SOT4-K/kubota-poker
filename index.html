@@ -669,7 +669,7 @@ function emptyView(){
     <h1 class="h-title">家族のポーカー収支を、<br>ここにまとめよう</h1>
     <ol class="steps">
       <li><span>1</span><p>メンバーを追加<small>遊ぶ家族の名前を登録します</small></p></li>
-      <li><span>2</span><p>ゲームを記録<small>バイインと終了時のチップを入れるだけ</small></p></li>
+      <li><span>2</span><p>ゲームを記録<small>Buy-inと終了時のチップを入れるだけ</small></p></li>
       <li><span>3</span><p>推移を見る<small>前回からの増減と通算が自動で出ます</small></p></li>
     </ol>
     <div class="btn-row">
@@ -708,7 +708,7 @@ function homeView(){
     latestHtml = `<section class="card">
       <button class="latest-head" style="width:100%;background:none;border:0;border-bottom:1px solid var(--rail);text-align:left" data-act="open-session" data-id="${latest.id}" type="button">
         <div class="datebox"><small>${p.m}月</small><b>${p.d}</b><span>${p.wd}曜</span></div>
-        <div class="latest-meta"><b>最新のゲーム</b><small>${res.length}人 ・ バイイン計 ${fmt(t.buy)}円${latest.memo?' ・ '+esc(latest.memo):''}</small></div>
+        <div class="latest-meta"><b>最新のゲーム</b><small>${res.length}人 ・ Buy-in計 ${fmt(t.buy)}円${latest.memo?' ・ '+esc(latest.memo):''}</small></div>
         ${t.diff? `<span class="pill warn">差額 ${sgn(t.diff)}</span>`:''}
       </button>
       ${res.map((r,i)=>`<div class="res">${avatar(pm[r.pid],true)}
@@ -721,7 +721,7 @@ function homeView(){
   <div><div class="h-eyebrow">Leaderboard</div><h1 class="h-title">通算ランキング</h1></div>
   <div class="stats">
     <div class="stat"><small>ゲーム数</small><b>${A.ss.length}<em>回</em></b></div>
-    <div class="stat"><small>動いたバイイン</small><b>${fmt(totalPot)}<em>円</em></b></div>
+    <div class="stat"><small>動いたBuy-in</small><b>${fmt(totalPot)}<em>円</em></b></div>
     <div class="stat"><small>最終プレイ</small><b>${latest?dshort(latest.date):'—'}</b></div>
   </div>
   <section class="card"><ol class="board">${rows}</ol></section>
@@ -732,7 +732,7 @@ function gamesView(){
   const D = data(), A = analyze(), pm = playerMap();
   if (!D.players.length) return emptyView();
   if (!A.ss.length) return `${demoBanner()}<div><div class="h-eyebrow">Games</div><h1 class="h-title">ゲームの記録</h1></div>
-    <section class="card pad"><p class="note">記録はまだありません。<b>「記録する」</b>から、参加者・バイイン・終了時のチップを入れてください。</p></section>`;
+    <section class="card pad"><p class="note">記録はまだありません。<b>「記録する」</b>から、参加者・Buy-in・終了時のチップを入れてください。</p></section>`;
   const list = [...A.ss].reverse();
   let html = '', curM = '';
   let buf = [];
@@ -750,7 +750,7 @@ function gamesView(){
         <div class="line">${top && top.profit>0 ? `<span class="pill first">トップ ${esc(pm[top.pid]?.name||'')} ${sgn(top.profit)}</span>`:''}${t.diff?`<span class="pill warn">差額 ${sgn(t.diff)}</span>`:''}</div>
         ${s.memo?`<div class="memo">${esc(s.memo)}</div>`:''}
       </div>
-      <div class="end"><small>バイイン計</small><b>${fmt(t.buy)}</b></div>
+      <div class="end"><small>Buy-in計</small><b>${fmt(t.buy)}</b></div>
     </button>`);
   }
   flush();
@@ -952,7 +952,7 @@ function sessionSheet(sh, lv){
   const res = Object.keys(s.entries||{}).map(pid=>({pid, ...A.per[s.id][pid]})).sort((a,b)=>b.profit-a.profit);
   const tr = settle(s.entries||{});
   const body = `
-    <div class="h-sub" style="margin:0">${s.memo?esc(s.memo)+' ・ ':''}${res.length}人 ・ バイイン計 ${fmt(t.buy)}円 ${t.diff?`<span class="pill warn">差額 ${sgn(t.diff)}円</span>`:'<span class="pill ok">収支一致</span>'}</div>
+    <div class="h-sub" style="margin:0">${s.memo?esc(s.memo)+' ・ ':''}${res.length}人 ・ Buy-in計 ${fmt(t.buy)}円 ${t.diff?`<span class="pill warn">差額 ${sgn(t.diff)}円</span>`:'<span class="pill ok">収支一致</span>'}</div>
     <section>
       ${res.map((r,i)=>`<div class="dres">${avatar(pm[r.pid])}
         <div class="meta"><b>${i===0&&r.profit>0?'<span class="pill first" style="margin-right:6px">トップ</span>':''}${esc(pm[r.pid]?.name||'（削除済み）')}</b>
@@ -965,7 +965,7 @@ function sessionSheet(sh, lv){
     <section style="display:flex;flex-direction:column;gap:10px">
       <div class="sec-head"><h2>精算</h2><span class="hint">最少の受け渡し</span></div>
       ${tr.length ? `<ul class="settle">${tr.map(x=>`<li><span class="nm">${avatar(pm[x.from],true)}<span>${esc(pm[x.from]?.name||'?')}</span></span><span class="arw">→</span><span class="nm">${avatar(pm[x.to],true)}<span>${esc(pm[x.to]?.name||'?')}</span></span><b>${fmt(x.amt)}円</b></li>`).join('')}</ul>` : '<p class="note">受け渡しはありません。</p>'}
-      ${t.diff?`<p class="hint">チップの合計がバイインと${fmt(Math.abs(t.diff))}円ずれています。精算は記録どおりの収支で計算しています。</p>`:''}
+      ${t.diff?`<p class="hint">チップの合計がBuy-inと${fmt(Math.abs(t.diff))}円ずれています。精算は記録どおりの収支で計算しています。</p>`:''}
     </section>`;
   const foot = S.canWrite ? `<div class="btn-row"><button class="btn danger" type="button" data-act="del-session" data-id="${s.id}">削除</button><button class="btn gold" type="button" data-act="edit-session" data-id="${s.id}">編集</button></div>` : '';
   return sheetFrame(dlong(s.date), body, foot, lv);
@@ -997,7 +997,7 @@ function editorSheet(sh, lv){
   const body = `
     <div class="grid2">
       <div class="field"><label for="edDate">日付</label><input class="inp" type="date" id="edDate" value="${esc(d.date)}"></div>
-      <div class="field"><label for="edBuy">標準バイイン</label><input class="inp numin" type="number" inputmode="numeric" min="0" step="1" id="edBuy" value="${db_}"></div>
+      <div class="field"><label for="edBuy">標準Buy-in</label><input class="inp numin" type="number" inputmode="numeric" min="0" step="1" id="edBuy" value="${db_}"></div>
     </div>
     <div class="field"><label for="edMemo">メモ</label><input class="inp" id="edMemo" maxlength="40" placeholder="場所やルールなど（任意）" value="${esc(d.memo)}"></div>
     <div class="field"><span class="lbl">参加者</span>
@@ -1009,9 +1009,9 @@ function editorSheet(sh, lv){
       const rebuys = Math.max(0, Math.round((+e.buyIn||0)/db_) - 1);
       return `<div class="entry" data-pid="${id}">
         <div class="entry-top">${avatar(p,true)}<b>${esc(p?.name||'?')}</b><span class="pr num ${pr==null?'zero':cls(pr)}" data-pr="${id}">${pr==null?'—':sgn(pr)}</span></div>
-        <div class="erow"><span>バイイン</span>
-          <div class="stepper"><button type="button" data-act="ed-buy" data-id="${id}" data-d="-1" aria-label="${esc(p?.name)}のバイインを減らす">−</button>
-          <input class="inp numin" type="number" inputmode="numeric" min="0" step="1" id="buy-${id}" data-f="buyIn" data-id="${id}" value="${esc(e.buyIn)}" aria-label="${esc(p?.name)}のバイイン">
+        <div class="erow"><span>Buy-in</span>
+          <div class="stepper"><button type="button" data-act="ed-buy" data-id="${id}" data-d="-1" aria-label="${esc(p?.name)}のBuy-inを減らす">−</button>
+          <input class="inp numin" type="number" inputmode="numeric" min="0" step="1" id="buy-${id}" data-f="buyIn" data-id="${id}" value="${esc(e.buyIn)}" aria-label="${esc(p?.name)}のBuy-in">
           <button type="button" data-act="ed-buy" data-id="${id}" data-d="1" aria-label="${esc(p?.name)}にリバイを追加">＋</button></div>
         </div>
         ${rebuys>0?`<div class="hint" style="margin:-4px 0 0 72px">リバイ ${rebuys}回分を含む</div>`:''}
@@ -1027,7 +1027,7 @@ function editorSheet(sh, lv){
   return sheetFrame(d.isNew ? 'ゲームを記録' : 'ゲームを編集', body, foot, lv);
 }
 function totalsHtml(t){
-  return `<div><small>バイイン計</small><b>${fmt(t.buy)}</b></div><div><small>チップ計</small><b>${fmt(t.out)}</b></div>
+  return `<div><small>Buy-in計</small><b>${fmt(t.buy)}</b></div><div><small>チップ計</small><b>${fmt(t.out)}</b></div>
     <div><small>${t.missing?`未入力 ${t.missing}人`:'差額'}</small><b class="${t.missing?'zero':t.diff===0?'pos':'neg'}" style="${t.diff&&!t.missing?'color:var(--warn)':''}">${t.missing?'—':t.diff===0?'一致':sgn(t.diff)}</b></div>`;
 }
 function refreshEditorLive(){
@@ -1047,7 +1047,7 @@ async function saveDraft(sh){
   if (!d.order.length){ toast('参加者を選んでください'); return; }
   const t = draftTotals(d);
   if (t.missing){ toast(`終了時のチップが未入力の人が${t.missing}人います（0円なら0と入力）`); return; }
-  if (t.diff !== 0 && !sh.confirm){ sh.confirm = true; const b=$('#edSave'); if (b) b.textContent = `差額 ${sgn(t.diff)}円のまま保存する`; toast('チップ合計がバイイン合計と合いません。確認してください'); return; }
+  if (t.diff !== 0 && !sh.confirm){ sh.confirm = true; const b=$('#edSave'); if (b) b.textContent = `差額 ${sgn(t.diff)}円のまま保存する`; toast('チップ合計がBuy-in合計と合いません。確認してください'); return; }
   const entries = {};
   d.order.forEach(id=>{ const e=d.entries[id]; entries[id] = {buyIn:+e.buyIn||0, cashOut:+e.cashOut||0, ...(e.chips?{chips:e.chips}:{})}; });
   const obj = {id:d.id, date:d.date, memo:d.memo.trim(), entries, createdAt:d.createdAt, updatedAt:Date.now()};
@@ -1208,7 +1208,7 @@ let rzT; window.addEventListener('resize', ()=>{ clearTimeout(rzT); rzT=setTimeo
 
 async function exportCsv(){
   const A = analyze(), pm = playerMap();
-  const lines = [['日付','メモ','プレイヤー','バイイン','終了時','収支','通算'].join(',')];
+  const lines = [['日付','メモ','プレイヤー','Buy-in','終了時','収支','通算'].join(',')];
   A.ss.forEach(s=> Object.keys(s.entries||{}).forEach(pid=>{
     const r = A.per[s.id][pid];
     lines.push([s.date, `"${(s.memo||'').replace(/"/g,'""')}"`, `"${(pm[pid]?.name||'').replace(/"/g,'""')}"`, r.buy, r.out, r.profit, r.after].join(','));
