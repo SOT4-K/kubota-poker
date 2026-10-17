@@ -1,6 +1,6 @@
 {
-  "name": "Kubota Poker",
-  "short_name": "Kubota",
+  "name": "PokerLog",
+  "short_name": "PokerLog",
   "description": "家族のポーカー収支を記録・共有するアプリ",
   "lang": "ja",
   "start_url": "./",

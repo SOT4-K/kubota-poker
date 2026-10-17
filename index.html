@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Kubota Poker</title>
+<title>PokerLog</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <script src="config.js"></script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Kubota Poker">
+<meta name="apple-mobile-web-app-title" content="PokerLog">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0c211b">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -267,6 +267,11 @@ main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px
 .dres .r{text-align:right}
 .dres .r b{display:block;font-family:var(--f-num);font-size:26px;font-weight:700;line-height:1.05}
 .dres .r small{font-size:12px;color:var(--ink-3)}
+.buys{display:flex;flex-wrap:wrap;gap:2px 6px;align-items:center;margin-top:3px;font-family:var(--f-num);font-size:13px;color:var(--ink-2)}
+.buys i{font-style:normal;color:var(--ink-3)}
+.buys em{font-style:normal;color:var(--ink-3);margin-right:2px}
+.pill.live{background:rgba(242,193,78,.15);color:var(--warn)}
+.btn.sm{padding:6px 12px;font-size:13px;min-height:0}
 .settle{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .settle li{display:grid;grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr) auto;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:var(--felt);border:1px solid var(--rail);font-weight:700;font-size:14px}
 .settle li .nm{display:flex;align-items:center;gap:8px;min-width:0}
@@ -465,9 +470,11 @@ function spark(vals, color, w=64, h=24){
 function sortSessions(list){
   return [...list].sort((a,b)=> (a.date||'').localeCompare(b.date||'') || (a.createdAt||0)-(b.createdAt||0));
 }
+// ゲーム中（終了時のチップが未入力）の記録は、収支・通算・推移に入れない
+const liveSessions = () => data().sessions.filter(s=>s.live).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
 function analyze(){
   const D = data();
-  const ss = sortSessions(D.sessions);
+  const ss = sortSessions(D.sessions.filter(s=>!s.live));
   const cum = {}, last = {}, hist = {}, per = {};
   ss.forEach((s, i) => {
     per[s.id] = {};
@@ -487,6 +494,21 @@ function sessionTotals(s){
   for (const e of Object.values(s.entries||{})){ buy += +e.buyIn||0; out += +e.cashOut||0; }
   return {buy, out, diff: out-buy};
 }
+/* Buy-in の履歴：entry.buys = [{amt, at}]（at はミリ秒の時刻）。buyIn は常にその合計。
+   buys の無い古い記録は、これまでどおり buyIn だけで扱う。 */
+const hm = ts => { const d=new Date(ts); return `${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`; };
+function buysLine(e){
+  const b = e && e.buys; if (!b || !b.length) return '';
+  return `<div class="buys">${b.map((x,i)=>`<span><em>${hm(x.at)}</em>${i?'+':''}${fmt(x.amt)}</span>`).join('<i>→</i>')}</div>`;
+}
+function setBuy(e, total){
+  total = Math.max(0, Math.round(+total||0));
+  if (!e.buys){ e.buyIn = total; return; }
+  const b = e.buys; let sum = b.reduce((a,x)=>a+x.amt,0);
+  if (total > sum) b.push({amt: total-sum, at: Date.now()});
+  while (sum > total && b.length){ const l=b[b.length-1], cut=Math.min(l.amt, sum-total); l.amt-=cut; sum-=cut; if (!l.amt) b.pop(); }
+  e.buyIn = total;
+}
 function playerStats(pid, A){
   const h = A.hist[pid] || [];
   const games = h.length, wins = h.filter(x=>x.profit>0).length;
@@ -499,6 +521,7 @@ function playerStats(pid, A){
     rate: games ? wins/games : 0,
     avg: games ? total/games : 0,
     best: games ? Math.max(...h.map(x=>x.profit)) : 0,
+    maxBuy: games ? Math.max(...h.map(x=>x.buy)) : 0,
     worst: games ? Math.min(...h.map(x=>x.profit)) : 0,
     peak: games ? Math.max(0,...h.map(x=>x.cum)) : 0,
     streak, kind,
@@ -717,7 +740,7 @@ function homeView(){
       </div>`).join('')}
     </section>`;
   }
-  return `${demoBanner()}
+  return `${demoBanner()}${liveCards()}
   <div><div class="h-eyebrow">Leaderboard</div><h1 class="h-title">通算ランキング</h1></div>
   <div class="stats">
     <div class="stat"><small>ゲーム数</small><b>${A.ss.length}<em>回</em></b></div>
@@ -728,10 +751,26 @@ function homeView(){
   ${latestHtml || `<section class="card pad"><p class="note">まだゲームの記録がありません。右下の「記録する」から最初のゲームを入れましょう。</p></section>`}`;
 }
 
+function liveCards(){
+  const pm = playerMap(), ls = liveSessions();
+  if (!ls.length) return '';
+  return `<section class="card">${ls.map(s=>{
+    const p = dparts(s.date), t = sessionTotals(s), ids = Object.keys(s.entries||{});
+    return `<button class="game" data-act="open-session" data-id="${s.id}" type="button">
+      <div class="datebox"><small>${p.m}月</small><b>${p.d}</b><span>${p.wd}曜</span></div>
+      <div class="mid">
+        <div class="line"><span class="pill live">ゲーム中</span><span class="stack">${ids.slice(0,6).map(id=>avatar(pm[id],true)).join('')}</span>${ids.length}人</div>
+        ${s.memo?`<div class="memo">${esc(s.memo)}</div>`:''}
+      </div>
+      <div class="end"><small>TOTAL Buy-in</small><b>${fmt(t.buy)}</b></div>
+    </button>`;
+  }).join('')}</section>`;
+}
+
 function gamesView(){
   const D = data(), A = analyze(), pm = playerMap();
   if (!D.players.length) return emptyView();
-  if (!A.ss.length) return `${demoBanner()}<div><div class="h-eyebrow">Games</div><h1 class="h-title">ゲームの記録</h1></div>
+  if (!A.ss.length) return `${demoBanner()}<div><div class="h-eyebrow">Games</div><h1 class="h-title">ゲームの記録</h1></div>${liveCards()}
     <section class="card pad"><p class="note">記録はまだありません。<b>「記録する」</b>から、参加者・Buy-in・終了時のチップを入れてください。</p></section>`;
   const list = [...A.ss].reverse();
   let html = '', curM = '';
@@ -754,7 +793,7 @@ function gamesView(){
     </button>`);
   }
   flush();
-  return `${demoBanner()}<div><div class="h-eyebrow">Games</div><h1 class="h-title">ゲームの記録</h1><p class="h-sub">${A.ss.length}回分。タップで結果と精算を表示します。</p></div>${html}`;
+  return `${demoBanner()}<div><div class="h-eyebrow">Games</div><h1 class="h-title">ゲームの記録</h1><p class="h-sub">${A.ss.length}回分。タップで結果と精算を表示します。</p></div>${liveCards()}${html}`;
 }
 
 function trendsView(){
@@ -788,6 +827,9 @@ function trendsView(){
       <div><small>最高</small><b class="${cls(st.best)}">${sgn(st.best)}</b></div>
       <div><small>最低</small><b class="${cls(st.worst)}">${sgn(st.worst)}</b></div>
       <div><small>回収率</small><b>${st.buy?Math.round((st.buy+st.total)/st.buy*100):0}%</b></div>
+      <div><small>TOTAL Buy-in</small><b>${fmt(st.buy)}</b></div>
+      <div><small>1回平均Buy-in</small><b>${st.games?fmt(st.buy/st.games):0}</b></div>
+      <div><small>最大Buy-in</small><b>${fmt(st.maxBuy)}</b></div>
     </div>
     <div><div class="lbl" style="margin-bottom:6px">各回の収支と通算</div><div class="chartbox" id="barChart"></div></div>
   </section>` : ''}`;
@@ -802,7 +844,8 @@ function matrixHtml(ps, A){
   return `<section class="card"><div class="scroller"><table class="matrix">
     <thead><tr><th>日付</th>${ps.map(p=>`<th>${esc(p.name)}</th>`).join('')}</tr></thead>
     <tbody>${rows}</tbody>
-    <tfoot><tr><td>通算</td>${ps.map(p=>`<td class="${cls(A.cum[p.id]||0)}">${sgn(A.cum[p.id]||0)}</td>`).join('')}</tr></tfoot>
+    <tfoot><tr><td>通算</td>${ps.map(p=>`<td class="${cls(A.cum[p.id]||0)}">${sgn(A.cum[p.id]||0)}</td>`).join('')}</tr>
+      <tr><td style="border-top:0;font-size:12px">TOTAL Buy-in</td>${ps.map(p=>`<td style="border-top:0">${fmt((A.hist[p.id]||[]).reduce((a,x)=>a+x.buy,0))}</td>`).join('')}</tr></tfoot>
   </table></div></section>`;
 }
 
@@ -948,6 +991,7 @@ function sessionSheet(sh, lv){
   const D = data(), A = analyze(), pm = playerMap();
   const s = D.sessions.find(x=>x.id===sh.id);
   if (!s) return sheetFrame('ゲーム', '<p class="note">この記録は削除されました。</p>', '', lv);
+  if (s.live) return liveSheet(s, lv);
   const t = sessionTotals(s);
   const res = Object.keys(s.entries||{}).map(pid=>({pid, ...A.per[s.id][pid]})).sort((a,b)=>b.profit-a.profit);
   const tr = settle(s.entries||{});
@@ -956,7 +1000,7 @@ function sessionSheet(sh, lv){
     <section>
       ${res.map((r,i)=>`<div class="dres">${avatar(pm[r.pid])}
         <div class="meta"><b>${i===0&&r.profit>0?'<span class="pill first" style="margin-right:6px">トップ</span>':''}${esc(pm[r.pid]?.name||'（削除済み）')}</b>
-          <small>${fmt(r.buy)} → ${fmt(r.out)}</small>
+          <small>TOTAL Buy-in ${fmt(r.buy)} → 終了時 ${fmt(r.out)}</small>${buysLine(s.entries[r.pid])}
           <div class="pills">${r.prevProfit==null?'<span class="pill flat">初参加</span>':`<span class="pill flat">前回 ${sgn(r.prevProfit)}</span>${deltaPill(r.profit-r.prevProfit)}`}</div>
         </div>
         <div class="r"><b class="${cls(r.profit)}">${sgn(r.profit)}</b><small>通算 <span class="${cls(r.after)}">${sgn(r.after)}</span></small></div>
@@ -970,18 +1014,43 @@ function sessionSheet(sh, lv){
   const foot = S.canWrite ? `<div class="btn-row"><button class="btn danger" type="button" data-act="del-session" data-id="${s.id}">削除</button><button class="btn gold" type="button" data-act="edit-session" data-id="${s.id}">編集</button></div>` : '';
   return sheetFrame(dlong(s.date), body, foot, lv);
 }
+/* --- live game（ゲーム中）: ＋Buy-in でその時刻の Buy-in をすぐ保存する --- */
+function liveSheet(s, lv){
+  const pm = playerMap(), t = sessionTotals(s), ids = Object.keys(s.entries||{});
+  const body = `
+    <div class="h-sub" style="margin:0"><span class="pill live">ゲーム中</span> ${s.memo?esc(s.memo)+' ・ ':''}${ids.length}人 ・ TOTAL Buy-in ${fmt(t.buy)}円</div>
+    <section>
+      ${ids.map(pid=>{ const e = s.entries[pid]; return `<div class="dres">${avatar(pm[pid])}
+        <div class="meta"><b>${esc(pm[pid]?.name||'（削除済み）')}</b>${buysLine(e) || `<small>${fmt(+e.buyIn||0)}</small>`}</div>
+        <div class="r"><small>TOTAL Buy-in</small><b>${fmt(+e.buyIn||0)}</b>${S.canWrite?`<button class="btn sm" type="button" data-act="live-buy" data-id="${s.id}" data-pid="${pid}" aria-label="${esc(pm[pid]?.name)}にBuy-inを追加">＋Buy-in</button>`:''}</div>
+      </div>`; }).join('')}
+    </section>
+    <p class="hint">＋Buy-in を押すと、その時刻で ${fmt(defaultBuy())}円 の Buy-in を記録します。取り消しや金額の変更は「編集」から。終わったら「編集」で終了時のチップを入れて保存すると、収支と精算が出ます。</p>`;
+  const foot = S.canWrite ? `<div class="btn-row"><button class="btn danger" type="button" data-act="del-session" data-id="${s.id}">削除</button><button class="btn gold" type="button" data-act="edit-session" data-id="${s.id}">編集・終了</button></div>` : '';
+  return sheetFrame(dlong(s.date), body, foot, lv);
+}
+async function liveBuy(sid, pid){
+  if (S.mode==='shared' && !S.demo) await pull();  // 別の端末で足された Buy-in を上書きしないよう、先に最新を読む
+  const s = data().sessions.find(x=>x.id===sid); if (!s || !s.entries[pid]) return;
+  const obj = JSON.parse(JSON.stringify(s)), e = obj.entries[pid];
+  if (!e.buys) e.buys = (+e.buyIn||0) > 0 ? [{amt:+e.buyIn, at:obj.createdAt||Date.now()}] : [];
+  const amt = defaultBuy();
+  e.buys.push({amt, at:Date.now()}); e.buyIn = (+e.buyIn||0) + amt; obj.updatedAt = Date.now();
+  try { await write('sessions', obj); toast(`${playerMap()[pid]?.name||''} に ${fmt(amt)}円 の Buy-in を記録しました`); } catch(e){}
+}
 
 /* --- editor --- */
 function defaultBuy(){ const v = +lsGet('kubota-default-buyin'); return v>0 ? v : 1000; }
+const newEntry = () => { const amt = defaultBuy(); return {buyIn: amt, cashOut:'', buys:[{amt, at:Date.now()}]}; };
 function newDraft(){
   const last = sortSessions(data().sessions).slice(-1)[0];
   const ids = last ? Object.keys(last.entries||{}).filter(id=>activePlayers().some(p=>p.id===id)) : activePlayers().map(p=>p.id);
-  const entries = {}; ids.forEach(id=> entries[id] = {buyIn: defaultBuy(), cashOut:''});
+  const entries = {}; ids.forEach(id=> entries[id] = newEntry());
   return {id: uid(), date: todayStr(), memo:'', entries, order: ids, createdAt: Date.now(), isNew:true};
 }
 function draftFrom(s){
   const entries = {};
-  for (const [k,e] of Object.entries(s.entries||{})) entries[k] = {buyIn: e.buyIn, cashOut: e.cashOut ?? '', chips: e.chips ? {...e.chips} : undefined};
+  for (const [k,e] of Object.entries(s.entries||{})) entries[k] = {buyIn: e.buyIn, cashOut: e.cashOut ?? '', chips: e.chips ? {...e.chips} : undefined, buys: e.buys ? e.buys.map(x=>({...x})) : undefined};
   return {id:s.id, date:s.date, memo:s.memo||'', entries, order:Object.keys(entries), createdAt:s.createdAt||Date.now(), isNew:false};
 }
 function draftTotals(d){
@@ -1014,7 +1083,7 @@ function editorSheet(sh, lv){
           <input class="inp numin" type="number" inputmode="numeric" min="0" step="1" id="buy-${id}" data-f="buyIn" data-id="${id}" value="${esc(e.buyIn)}" aria-label="${esc(p?.name)}のBuy-in">
           <button type="button" data-act="ed-buy" data-id="${id}" data-d="1" aria-label="${esc(p?.name)}にリバイを追加">＋</button></div>
         </div>
-        ${rebuys>0?`<div class="hint" style="margin:-4px 0 0 72px">リバイ ${rebuys}回分を含む</div>`:''}
+        ${e.buys&&e.buys.length ? `<div style="margin:-4px 0 0 72px">${buysLine(e)}</div>` : rebuys>0?`<div class="hint" style="margin:-4px 0 0 72px">リバイ ${rebuys}回分を含む</div>`:''}
         <div class="erow"><span>終了時</span>
           <div class="outrow"><input class="inp numin" type="number" inputmode="numeric" min="0" step="1" id="out-${id}" data-f="cashOut" data-id="${id}" value="${esc(e.cashOut)}" placeholder="チップ合計" aria-label="${esc(p?.name)}の終了時チップ">
           <button class="calc" type="button" data-act="ed-chips" data-id="${id}">${chipSVG('b',20)}数える</button></div>
@@ -1023,7 +1092,7 @@ function editorSheet(sh, lv){
     }).join('')}`;
   const t = draftTotals(d);
   const foot = `<div class="totals" id="edTotals">${totalsHtml(t)}</div>
-    <button class="btn gold block" type="button" data-act="ed-save" id="edSave" ${d.order.length?'':'disabled'}>${sh.confirm?`差額 ${sgn(t.diff)}円のまま保存する`:'保存する'}</button>`;
+    <button class="btn gold block" type="button" data-act="ed-save" id="edSave" ${d.order.length?'':'disabled'}>${sh.confirm?`差額 ${sgn(t.diff)}円のまま保存する`:saveLabel(t)}</button>`;
   return sheetFrame(d.isNew ? 'ゲームを記録' : 'ゲームを編集', body, foot, lv);
 }
 function totalsHtml(t){
@@ -1039,25 +1108,27 @@ function refreshEditorLive(){
     el.textContent = pr==null ? '—' : sgn(pr); el.className = 'pr num ' + (pr==null?'zero':cls(pr));
   }
   const t = draftTotals(d); const tt = $('#edTotals'); if (tt) tt.innerHTML = totalsHtml(t);
-  if (sh.confirm){ sh.confirm=false; const b=$('#edSave'); if (b) b.textContent='保存する'; }
+  sh.confirm=false; const b=$('#edSave'); if (b) b.textContent=saveLabel(t);
 }
+// 終了時のチップが未入力の人がいれば「ゲーム中」として途中保存する
+const saveLabel = t => t.missing ? 'ゲーム中として保存' : '保存する';
 async function saveDraft(sh){
   const d = sh.draft;
   if (!d.date){ toast('日付を入れてください'); return; }
   if (!d.order.length){ toast('参加者を選んでください'); return; }
-  const t = draftTotals(d);
-  if (t.missing){ toast(`終了時のチップが未入力の人が${t.missing}人います（0円なら0と入力）`); return; }
-  if (t.diff !== 0 && !sh.confirm){ sh.confirm = true; const b=$('#edSave'); if (b) b.textContent = `差額 ${sgn(t.diff)}円のまま保存する`; toast('チップ合計がBuy-in合計と合いません。確認してください'); return; }
+  d.order.forEach(id=>setBuy(d.entries[id], d.entries[id].buyIn));
+  const t = draftTotals(d), live = t.missing > 0;
+  if (!live && t.diff !== 0 && !sh.confirm){ sh.confirm = true; const b=$('#edSave'); if (b) b.textContent = `差額 ${sgn(t.diff)}円のまま保存する`; toast('チップ合計がBuy-in合計と合いません。確認してください'); return; }
   const entries = {};
-  d.order.forEach(id=>{ const e=d.entries[id]; entries[id] = {buyIn:+e.buyIn||0, cashOut:+e.cashOut||0, ...(e.chips?{chips:e.chips}:{})}; });
-  const obj = {id:d.id, date:d.date, memo:d.memo.trim(), entries, createdAt:d.createdAt, updatedAt:Date.now()};
+  d.order.forEach(id=>{ const e=d.entries[id]; entries[id] = {buyIn:+e.buyIn||0, cashOut: e.cashOut===''||e.cashOut==null ? null : +e.cashOut||0, ...(e.chips?{chips:e.chips}:{}), ...(e.buys?{buys:e.buys}:{})}; });
+  const obj = {id:d.id, date:d.date, memo:d.memo.trim(), entries, createdAt:d.createdAt, updatedAt:Date.now(), ...(live?{live:true}:{})};
   const wasNew = d.isNew;
   S.sheets = S.sheets.filter(s=>s!==sh);
   try { await write('sessions', obj); } catch(e){ return; }
   S.sheets = [];
   if (wasNew){ S.tab='home'; setHash(); render(); }
   openSheet({type:'session', id:obj.id});
-  toast(wasNew ? '記録しました' : '更新しました');
+  toast(live ? 'ゲーム中として保存しました' : wasNew ? '記録しました' : '更新しました');
 }
 
 /* --- chip counter --- */
@@ -1095,7 +1166,7 @@ function playerSheet(sh, lv){
 /* ================= render ================= */
 function render(){
   syncPill();
-  $('#brand').innerHTML = `${logoSVG(40)}<div class="wordmark"><b>Kubota</b><span>POKER LEDGER</span></div>`;
+  $('#brand').innerHTML = `${logoSVG(40)}<div class="wordmark"><b>PokerLog</b><span>POKER LEDGER</span></div>`;
   $('#tabs').innerHTML = TABS.map(t=>`<button class="tab" type="button" data-act="goto" data-tab="${t.id}" ${S.tab===t.id?'aria-current="page"':''}><svg viewBox="0 0 24 24" aria-hidden="true">${t.icon}</svg>${t.label}</button>`).join('');
   const v = $('#view');
   const prevTab = v.dataset.tab;
@@ -1146,13 +1217,14 @@ document.addEventListener('click', async ev => {
     case 'ed-toggle': {
       const sh = topSheet(), d = sh.draft;
       if (d.order.includes(id)){ d.order = d.order.filter(x=>x!==id); }
-      else { d.order.push(id); if (!d.entries[id]) d.entries[id] = {buyIn: defaultBuy(), cashOut:''}; }
+      else { d.order.push(id); if (!d.entries[id]) d.entries[id] = newEntry(); }
       sh.confirm=false; rerenderEditor(); break;
     }
     case 'ed-buy': {
       const sh = topSheet(), e = sh.draft.entries[id], step = defaultBuy();
-      e.buyIn = Math.max(0, (+e.buyIn||0) + step * (+b.dataset.d)); sh.confirm=false; rerenderEditor(); break;
+      setBuy(e, (+e.buyIn||0) + step * (+b.dataset.d)); sh.confirm=false; rerenderEditor(); break;
     }
+    case 'live-buy': if (S.canWrite) await liveBuy(id, b.dataset.pid); break;
     case 'ed-chips': { const sh=topSheet(); const e=sh.draft.entries[id]; openSheet({type:'chips', pid:id, counts:{...(e.chips||{w:0,r:0,g:0,b:0})}}); break; }
     case 'ed-save': saveDraft(topSheet()); break;
     case 'cc': { const sh=topSheet(); const k=b.dataset.k; sh.counts[k] = Math.max(0,(+sh.counts[k]||0)+(+b.dataset.d)); const inp=$('#cc-'+k); if(inp) inp.value=sh.counts[k]; refreshChips(sh); break; }
@@ -1184,6 +1256,11 @@ document.addEventListener('input', ev => {
   } else if (sh && sh.type==='chips' && t.dataset.cc){
     sh.counts[t.dataset.cc] = Math.max(0, Math.round(+t.value||0)); refreshChips(sh);
   }
+});
+// Buy-in を手で打ち替えたら、確定したとき（change）に増えた分・減った分を履歴へ反映する
+document.addEventListener('change', ev => {
+  const t = ev.target, sh = topSheet();
+  if (sh && sh.type==='editor' && t.dataset.f==='buyIn'){ const e = sh.draft.entries[t.dataset.id]; if (e && e.buys){ setBuy(e, e.buyIn); rerenderEditor(); } }
 });
 document.addEventListener('submit', async ev => {
   if (ev.target.id === 'lockForm'){
