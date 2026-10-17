@@ -708,7 +708,7 @@ function homeView(){
     latestHtml = `<section class="card">
       <button class="latest-head" style="width:100%;background:none;border:0;border-bottom:1px solid var(--rail);text-align:left" data-act="open-session" data-id="${latest.id}" type="button">
         <div class="datebox"><small>${p.m}月</small><b>${p.d}</b><span>${p.wd}曜</span></div>
-        <div class="latest-meta"><b>最新のゲーム</b><small>${res.length}人 ・ Buy-in計 ${fmt(t.buy)}円${latest.memo?' ・ '+esc(latest.memo):''}</small></div>
+        <div class="latest-meta"><b>最新のゲーム</b><small>${res.length}人 ・ TOTAL Buy-in ${fmt(t.buy)}円${latest.memo?' ・ '+esc(latest.memo):''}</small></div>
         ${t.diff? `<span class="pill warn">差額 ${sgn(t.diff)}</span>`:''}
       </button>
       ${res.map((r,i)=>`<div class="res">${avatar(pm[r.pid],true)}
@@ -750,7 +750,7 @@ function gamesView(){
         <div class="line">${top && top.profit>0 ? `<span class="pill first">トップ ${esc(pm[top.pid]?.name||'')} ${sgn(top.profit)}</span>`:''}${t.diff?`<span class="pill warn">差額 ${sgn(t.diff)}</span>`:''}</div>
         ${s.memo?`<div class="memo">${esc(s.memo)}</div>`:''}
       </div>
-      <div class="end"><small>Buy-in計</small><b>${fmt(t.buy)}</b></div>
+      <div class="end"><small>TOTAL Buy-in</small><b>${fmt(t.buy)}</b></div>
     </button>`);
   }
   flush();
@@ -952,7 +952,7 @@ function sessionSheet(sh, lv){
   const res = Object.keys(s.entries||{}).map(pid=>({pid, ...A.per[s.id][pid]})).sort((a,b)=>b.profit-a.profit);
   const tr = settle(s.entries||{});
   const body = `
-    <div class="h-sub" style="margin:0">${s.memo?esc(s.memo)+' ・ ':''}${res.length}人 ・ Buy-in計 ${fmt(t.buy)}円 ${t.diff?`<span class="pill warn">差額 ${sgn(t.diff)}円</span>`:'<span class="pill ok">収支一致</span>'}</div>
+    <div class="h-sub" style="margin:0">${s.memo?esc(s.memo)+' ・ ':''}${res.length}人 ・ TOTAL Buy-in ${fmt(t.buy)}円 ${t.diff?`<span class="pill warn">差額 ${sgn(t.diff)}円</span>`:'<span class="pill ok">収支一致</span>'}</div>
     <section>
       ${res.map((r,i)=>`<div class="dres">${avatar(pm[r.pid])}
         <div class="meta"><b>${i===0&&r.profit>0?'<span class="pill first" style="margin-right:6px">トップ</span>':''}${esc(pm[r.pid]?.name||'（削除済み）')}</b>
@@ -1027,7 +1027,7 @@ function editorSheet(sh, lv){
   return sheetFrame(d.isNew ? 'ゲームを記録' : 'ゲームを編集', body, foot, lv);
 }
 function totalsHtml(t){
-  return `<div><small>Buy-in計</small><b>${fmt(t.buy)}</b></div><div><small>チップ計</small><b>${fmt(t.out)}</b></div>
+  return `<div><small>TOTAL Buy-in</small><b>${fmt(t.buy)}</b></div><div><small>チップ計</small><b>${fmt(t.out)}</b></div>
     <div><small>${t.missing?`未入力 ${t.missing}人`:'差額'}</small><b class="${t.missing?'zero':t.diff===0?'pos':'neg'}" style="${t.diff&&!t.missing?'color:var(--warn)':''}">${t.missing?'—':t.diff===0?'一致':sgn(t.diff)}</b></div>`;
 }
 function refreshEditorLive(){
