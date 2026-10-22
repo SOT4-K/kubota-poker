@@ -571,6 +571,53 @@ details.arch summary{cursor:pointer;color:var(--ink-3);font-size:13px;font-weigh
 .picker .tg{flex:none;white-space:nowrap}
 .tbside{display:inline-flex;align-items:center;gap:8px}
 .tbside span{display:inline-flex;align-items:center}
+/* time bomb：日付ごとのカード */
+.tbg{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;align-items:center;padding:10px 14px;width:100%;text-align:left;background:none;border:0;border-top:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+.tbg .gno{font-family:var(--f-num);font-size:18px;color:var(--ink-3);text-align:center}
+.tbg .mid{display:flex;flex-direction:column;gap:5px;min-width:0}
+.tbg .line{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--ink-2)}
+.tbg .memo{font-size:12px;color:var(--ink-3)}
+/* time bomb：詳しく記録 */
+.modepick{display:flex;flex-direction:column;gap:10px}
+.modebtn{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:center;text-align:left;padding:14px;border-radius:var(--r);border:1.5px solid var(--line);background:var(--bg)}
+.modebtn svg{width:44px;height:44px}
+.modebtn b{display:block;font-size:16px;margin-bottom:2px} .modebtn small{display:block;color:var(--ink-3);font-size:12px;line-height:1.5}
+.tbd-top{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;border-radius:var(--r);background:#05070c;border:1px solid var(--line)}
+.tbd-chips{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;perspective:200px}
+.tbd-chip{width:26px;height:26px;border-radius:50%;border:2px solid #2a3553;background:radial-gradient(circle at 35% 30%,#2a3553,#111726);display:block}
+.tbd-chip.on{border-color:#9cc0ff;background:radial-gradient(circle at 35% 30%,#bcd5ff,var(--police) 55%,#1c4fae);box-shadow:0 0 10px color-mix(in srgb,var(--police) 70%,transparent)}
+.tbd-chip.flip{animation:chipflip .7s ease both}
+@keyframes chipflip{0%{transform:rotateY(0);filter:grayscale(1)}50%{transform:rotateY(90deg)}100%{transform:rotateY(0)}}
+.tbd-bombchip{width:24px;height:24px;border-radius:6px;margin-left:8px;border:2px dashed #5a2a26;display:block}
+.tbd-bombchip.on{background:var(--bomber);border:2px solid #ff9d93;box-shadow:0 0 12px var(--bomber)}
+.tbd-meta{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;font-size:12px;color:var(--ink-3)}
+.tbd-meta b{font-family:var(--f-num);color:var(--ink);font-size:16px;font-weight:400}
+.tbd-cnt{display:grid;grid-template-columns:34px minmax(0,1fr) 132px;gap:10px;align-items:center}
+.tbd-cnt .mini span{display:grid;place-items:center;font-size:20px;font-weight:700}
+.tbd-done{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.tcards{display:flex;flex-wrap:wrap;gap:4px}
+.tcard{width:32px;height:44px;border-radius:5px;display:inline-grid;place-items:center;font-size:9px;font-weight:700;color:#fff;border:1px solid rgba(255,255,255,.18);padding:0;flex:none;line-height:1.1;text-align:center;white-space:nowrap}
+.tcard.back{background:repeating-linear-gradient(45deg,#1b2440 0 4px,#232e52 4px 8px);border-color:#2a3553}
+button.tcard.back{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 22%,transparent)}
+button.tcard.back:active{transform:translateY(-4px)}
+.tcard.d{background:var(--police)} .tcard.s{background:#4a5470} .tcard.b{background:var(--bomber)}
+.tcard.open{animation:rise .3s ease both}
+.tcard.sm{width:auto;height:auto;padding:1px 6px;border-radius:4px;display:inline-block;font-size:11px}
+.tbd-row{display:grid;grid-template-columns:28px 76px minmax(0,1fr);gap:8px;align-items:center;padding:10px 14px}
+.tbd-row+.tbd-row{border-top:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+.tbd-row b{font-size:13px;min-width:0;display:flex;align-items:center;gap:3px;white-space:nowrap;overflow:hidden}
+.tbd-row.nipr{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.nip{width:16px;height:16px;flex:none;color:var(--accent)}
+.tbd-log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.tbd-log li{display:flex;align-items:center;gap:6px}
+.tbd-log .no{width:18px;color:var(--ink-3);font-family:var(--f-num)}
+.tbd-tbl td{vertical-align:middle}
+.hc{display:inline-block;font-size:11px;padding:0 5px;border-radius:4px;margin:1px 0;color:#fff;white-space:nowrap}
+.hc.d{background:color-mix(in srgb,var(--police) 55%,transparent)} .hc.s{background:#3a4257} .hc.b{background:color-mix(in srgb,var(--bomber) 55%,transparent)}
+.cutpick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cutpick button{border:0;border-radius:var(--r);padding:18px 6px;font-weight:800;font-size:16px;color:#fff;display:flex;flex-direction:column;align-items:center;gap:8px}
+.cutpick button .tcard{width:40px;height:56px;font-size:11px;box-shadow:0 4px 10px rgba(0,0,0,.4)}
+.cutpick .d{background:color-mix(in srgb,var(--police) 30%,var(--s1))} .cutpick .s{background:color-mix(in srgb,#4a5470 40%,var(--s1))} .cutpick .b{background:color-mix(in srgb,var(--bomber) 30%,var(--s1))}
 
 </style>
 </head>
@@ -768,6 +815,36 @@ async function remove(coll, id){
     try { await cdb.collection(coll).doc(id).delete(); } catch(e){ handleWriteErr(e); }
   } else saveLocal();
 }
+/* 一部だけの書き換え：set = {'hands.1.abc': {...}, 'cuts.3': null（消す）}, absent = 書く前にまだ空であるべき場所。
+   いくつもの端末が同じ記録に書くとき（タイムボムの詳しい記録）に使う。手元にはすぐ反映し、サーバーの結果で置き換える。 */
+const getPath = (o, path) => path.split('.').reduce((a,k)=> a!=null && typeof a==='object' && Object.prototype.hasOwnProperty.call(a,k) ? a[k] : undefined, o);
+function setPath(o, path, v){
+  const ks = path.split('.'), last = ks.pop();
+  for (const k of ks){ if (o[k]==null || typeof o[k]!=='object') o[k] = {}; o = o[k]; }
+  if (v === null) delete o[last]; else o[last] = v;
+}
+async function patchDoc(coll, id, set, absent=[]){
+  const D = data(), cur = D[coll].find(x=>x.id===id);
+  if (!cur){ toast('この記録は削除されました'); throw {code:'not_found'}; }
+  if (absent.some(p=>getPath(cur,p)!==undefined)){ toast('ほかの端末で先に記録されました'); throw {code:'conflict'}; }
+  const nd = clone(cur); Object.entries(set).forEach(([k,v])=>setPath(nd,k,v));
+  upsert(D[coll], nd); render();
+  if (S.demo) return nd;
+  if (S.backend === 'api'){
+    setBusy(true);
+    try { const j = await api({op:'patch', coll, id, set, absent}); upsert(S.real[coll], j.doc); S.rev = String(j.rev||S.rev); S.online = true; saveCache(); render(); return j.doc; }
+    catch(e){
+      if (e && e.code === 'conflict'){ toast('ほかの端末で先に記録されました'); pull(true); throw e; }
+      if (e && (e.code === 'bad_op' || e.code === 'bad_path')){ toast('スプレッドシート側のスクリプトを更新してください'); pull(true); throw e; }
+      handleWriteErr(e);
+    }
+    finally { setBusy(false); }
+  } else if (S.backend === 'claude'){
+    const {id:_, ...body} = clone(nd);
+    try { await cdb.collection(coll).doc(id).set(body); } catch(e){ handleWriteErr(e); }
+  } else saveLocal();
+  return nd;
+}
 function subscribeClaude(){
   const onErr = e => toast(e && e.code==='revoked' ? '共有データに接続できなくなりました' : '同期が止まりました。ページを開き直してください');
   COLLS.forEach(c => cdb.collection(c).onSnapshot(snap => {
@@ -777,6 +854,8 @@ function subscribeClaude(){
 function startPolling(){
   const editing = () => S.sheets.some(s=>!s.ro);
   setInterval(()=>{ if (document.visibilityState === 'visible' && !editing()) pull(); }, 15000);
+  // タイムボムを詳しく記録している間は、ほかの端末の入力がすぐ見えるよう短い間隔で確かめる
+  setInterval(()=>{ if (document.visibilityState === 'visible' && !S.busy && S.sheets.some(s=>s.type==='tbd-play' && data().matches.find(x=>x.id===s.id)?.status==='live')) pull(); }, 2500);
   document.addEventListener('visibilitychange', ()=>{ if (document.visibilityState === 'visible' && !editing()) pull(); });
   window.addEventListener('online', ()=>pull());
 }
@@ -1952,39 +2031,52 @@ function tbTeams(m){
       ${ids.map(id=>`<div class="m">${avatar(pm[id],true)}<span>${esc(pm[id]?.name||'（削除済み）')}</span></div>`).join('') || '<span class="hint">なし</span>'}</div>`;
   }).join('')}</div>`;
 }
-function tbMatchCard(m, title='最新のゲーム'){
+/* 1日に何回も遊ぶので、日付ごとに1枚のカードにまとめる（中に1回戦・2回戦…） */
+function tbGameRow(m, no){
+  const pm = playerMap(), ids = t => (m.players||[]).filter(id=>(m.teams||{})[id]===t);
+  return `<button class="tbg" data-act="open-match" data-id="${m.id}" type="button"><span class="gno">${no}</span>
+    <div class="mid">
+      <div class="line"><span class="pill ${m.winner}">${TB_TEAM[m.winner]?.short||''}の勝ち</span>${TB_HOW[m.how]?.label||''}${m.mode==='detail'?'<span class="vbadge base">詳細</span>':''}</div>
+      <div class="line">${tbSides(m.players||[], m.teams||{}).map(t=>`<span class="stack">${ids(t).map(id=>avatar(pm[id],true)).join('')}</span>`).join('<span style="color:var(--ink-3)">vs</span>')}</div>
+      ${m.memo?`<div class="memo">${esc(m.memo)}</div>`:''}
+    </div></button>`;
+}
+function tbDayCard(date, ms, title=''){
+  const w = t => ms.filter(m=>m.winner===t).length, sw = w('spy');
   return `<section class="card" style="overflow:hidden">
-    <button class="latest-head" data-act="open-match" data-id="${m.id}" type="button">${datebox(m.date)}
-      <div class="latest-meta"><b>${title}</b><small>${(m.players||[]).length}人 ・ ${TB_HOW[m.how]?.label||''}${m.memo?' ・ '+esc(m.memo):''}</small></div>
-      <span class="pill ${m.winner}">${TB_TEAM[m.winner]?.short||''}の勝ち</span></button>
-    ${tbTeams(m)}</section>`;
+    <div class="latest-head">${datebox(date)}
+      <div class="latest-meta"><b>${title || `${ms.length}ゲーム`}</b><small>${title?`${ms.length}ゲーム ・ `:''}ポリス ${w('police')}勝 ・ ボマー ${w('bomber')}勝${sw?` ・ スパイ ${sw}勝`:''}</small></div></div>
+    ${ms.map((m,i)=>tbGameRow(m, i+1)).join('')}</section>`;
+}
+// 日付の新しい順に [{date, ms（その日の古い順）}]
+function tbDays(ms){
+  const map = new Map();
+  ms.forEach(m=>{ if (!map.has(m.date)) map.set(m.date, []); map.get(m.date).push(m); });
+  return [...map.entries()].map(([date, ms])=>({date, ms})).reverse();
 }
 VIEWS.timebomb = {
   home(){
     const an = tbAn();
     const anySpy = an.ms.some(m=>tbHasSpy(m.players||[], m.teams||{}));
-    const latest = an.ms[an.ms.length-1];
-    return `${demoBanner()}
+    const day = tbDays(an.ms)[0];
+    return `${demoBanner()}${tbLiveCards()}
       ${heroTimebomb({top:wlTop3(an), n:an.ms.length})}
       ${pageHead('Leaderboard','勝利数ランキング')}
       ${wlBoard(an, (id,s)=>{ const t=tbTeamStats(s); return `<span class="tbside" title="ポリスで${t.police.w}勝・ボマーで${t.bomber.w}勝${t.spy.g?`・スパイで${t.spy.w}勝`:''}"><span><i class="dot police"></i>${t.police.w}</span><span><i class="dot bomber"></i>${t.bomber.w}</span>${t.spy.g?`<span><i class="dot spy"></i>${t.spy.w}</span>`:''}</span>`; }) || ''}
       <p class="hint" style="margin:-10px 2px 0"><i class="dot police"></i>ポリスでの勝ち数　<i class="dot bomber"></i>ボマーでの勝ち数${anySpy?'　<i class="dot spy"></i>スパイでの勝ち数':''}</p>
-      ${latest ? tbMatchCard(latest) : `<section class="card pad"><p class="note">まだ記録がありません。ゲームが終わったら「記録する」で、誰がどちらの陣営で、どちらが勝ったかを入れてください。</p></section>`}`;
+      ${day ? tbDayCard(day.date, day.ms, '最新の日') : `<section class="card pad"><p class="note">まだ記録がありません。ゲームが終わったら「記録する」で、誰がどちらの陣営で、どちらが勝ったかを入れてください。</p></section>`}`;
   },
   history(){
-    const an = tbAn(), pm = playerMap();
-    if (!an.ms.length) return `${demoBanner()}${pageHead('History','ゲームの記録')}<section class="card pad"><p class="note">記録はまだありません。</p></section>`;
-    return `${demoBanner()}${pageHead('History','ゲームの記録', `${an.ms.length}回分。タップで陣営の内訳を表示します。`)}
-      ${byMonth([...an.ms].reverse(), m => {
-        const ids = t => (m.players||[]).filter(id=>m.teams[id]===t);
-        return `<button class="game" data-act="open-match" data-id="${m.id}" type="button">${datebox(m.date)}
-          <div class="mid">
-            <div class="line"><span class="pill ${m.winner}">${TB_TEAM[m.winner]?.short}の勝ち</span>${TB_HOW[m.how]?.label||''}</div>
-            <div class="line">${tbSides(m.players||[], m.teams||{}).map(t=>`<span class="stack">${ids(t).map(id=>avatar(pm[id],true)).join('')}</span>`).join('<span style="color:var(--ink-3)">vs</span>')}</div>
-            ${m.memo?`<div class="memo">${esc(m.memo)}</div>`:''}
-          </div>
-          <div class="end"><small>人数</small><b>${(m.players||[]).length}</b></div></button>`;
-      })}`;
+    const an = tbAn();
+    if (!an.ms.length) return `${demoBanner()}${pageHead('History','ゲームの記録')}${tbLiveCards()}<section class="card pad"><p class="note">記録はまだありません。</p></section>`;
+    const days = tbDays(an.ms);
+    let html = '', curM = '';
+    for (const d of days){
+      const p = dparts(d.date), key = `${p.y}年${p.m}月`;
+      if (key !== curM){ html += `<div class="month">${key}</div>`; curM = key; }
+      html += tbDayCard(d.date, d.ms);
+    }
+    return `${demoBanner()}${pageHead('History','ゲームの記録', `${days.length}日・${an.ms.length}ゲーム。タップで陣営の内訳を表示します。`)}${tbLiveCards()}${html}`;
   },
   trends(){
     const an = tbAn();
@@ -2001,7 +2093,7 @@ VIEWS.timebomb = {
   members: () => membersView(),
 };
 AFTER.timebomb = () => { if (S.tab==='trends' && S.trendMode==='cum') wlCumChart('#cumChart', tbAn()); };
-FAB.timebomb = () => ({label:'記録する', act:'tb-new'});
+FAB.timebomb = () => tbdLive().length ? {label:'ゲームに戻る', act:'tbd-resume'} : {label:'記録する', act:'tb-new'};
 MEMSTAT.timebomb = () => { const an = tbAn(), o = {}; Object.entries(an.st).forEach(([id,s])=> o[id] = {sub:`${s.games}戦 ・ 勝率 ${pct(s.rate)}`, right:`${s.wins}勝`}); return o; };
 RULES.timebomb = () => `<section class="card pad col">
   <div class="sec-head"><h2>人数と陣営</h2></div>
@@ -2010,7 +2102,7 @@ RULES.timebomb = () => `<section class="card pad col">
   <p class="note"><b>ポリスの勝ち</b>：解除カードをすべて見つける。<br><b>ボマーの勝ち</b>：ボムがめくられる、または4ラウンドで解除しきれない。<br><b>スパイの勝ち</b>：ボムも爆発せず、解除もされない（スパイがいるときの時間切れは、ボマーではなくスパイの勝ち）。</p></section>`;
 EXPORT.timebomb = () => {
   const pm = playerMap(), out = [['日付','メモ','勝利陣営','決着','プレイヤー','陣営','勝敗']];
-  sortByDate(matchesOf('timebomb')).forEach(m => (m.players||[]).forEach(id => out.push([m.date, m.memo||'', TB_TEAM[m.winner]?.name, TB_HOW[m.how]?.label, pm[id]?.name||'', TB_TEAM[m.teams[id]]?.name, m.teams[id]===m.winner?'勝ち':'負け'])));
+  sortByDate(matchesOf('timebomb').filter(m=>m.status!=='live')).forEach(m => (m.players||[]).forEach(id => out.push([m.date, m.memo||'', TB_TEAM[m.winner]?.name, TB_HOW[m.how]?.label, pm[id]?.name||'', TB_TEAM[m.teams[id]]?.name, m.teams[id]===m.winner?'勝ち':'負け'])));
   return out;
 };
 DEMO.push((d, rnd) => {
@@ -2034,7 +2126,8 @@ SHEETS['timebomb-detail'] = (sh, lv) => {
   const how = TB_HOW[m.how] || {};
   const body = `<div class="tbwin ${m.winner}">${tbIcon(m.winner)}<div><b>${TB_TEAM[m.winner]?.name}の勝ち</b><small>${how.label}：${how.note}</small></div></div>
     <section class="card" style="overflow:hidden">${tbTeams(m)}</section>
-    ${m.memo?`<p class="note">${esc(m.memo)}</p>`:''}`;
+    ${m.memo?`<p class="note">${esc(m.memo)}</p>`:''}
+    ${m.mode==='detail' ? tbdReplay(m) : ''}`;
   const foot = S.canWrite ? `<div class="btn-row"><button class="btn danger" type="button" data-act="tb-del" data-id="${m.id}">削除</button><button class="btn gold" type="button" data-act="tb-edit" data-id="${m.id}">編集</button></div>` : '';
   return sheetFrame(dlong(m.date), body, foot, lv);
 };
@@ -2077,7 +2170,8 @@ async function tbSave(d){
   if (!has('police') || !has('bomber')) return toast('ポリスとボマーの両方に1人以上いるようにしてください');
   if (!d.winner || (d.winner==='spy' && !spy)) return toast('勝った陣営を選んでください');
   if (!d.how || !tbHowOk(d.how, d.winner, spy)) d.how = TB_HOW_DEFAULT[d.winner];
-  const obj = {id:d.id, game:'timebomb', date:d.date, memo:d.memo.trim(), players:[...d.order],
+  const prev = data().matches.find(x=>x.id===d.id) || {};
+  const obj = {...prev, id:d.id, game:'timebomb', date:d.date, memo:d.memo.trim(), players:[...d.order],
     teams:Object.fromEntries(d.order.map(id=>[id, d.teams[id]])), winner:d.winner, how:d.how,
     status:'done', createdAt:d.createdAt, updatedAt:Date.now()};
   S.sheets = []; document.body.style.overflow='';
@@ -2087,7 +2181,9 @@ async function tbSave(d){
   toast(d.isNew ? '記録しました' : '更新しました');
 }
 Object.assign(ACT, {
-  'tb-new': () => { if (S.canWrite) openSheet({type:'tb-editor', draft:tbNewDraft()}); },
+  'tb-new': () => { if (S.canWrite) openSheet({type:'tb-mode'}); },
+  'tb-mode-simple': () => { S.sheets.pop(); openSheet({type:'tb-editor', draft:tbNewDraft()}); },
+  'tb-mode-detail': () => { S.sheets.pop(); openSheet({type:'tbd-setup', draft:tbdNewDraft()}); },
   'tb-edit': b => { const m = data().matches.find(x=>x.id===b.dataset.id); if (!m) return; S.sheets.pop();
     openSheet({type:'tb-editor', draft:{id:m.id, date:m.date, memo:m.memo||'', order:[...m.players], teams:{...m.teams}, winner:m.winner, how:m.how, createdAt:m.createdAt||Date.now(), isNew:false}}); },
   'tb-del': b => arm(b, 'もう一度タップで削除', async ()=>{ S.sheets=[]; document.body.style.overflow=''; renderSheets(); try{ await remove('matches', b.dataset.id); toast('削除しました'); }catch(e){} }),
@@ -2109,6 +2205,280 @@ ONINPUT.push(t => {
   const sh = topSheet(); if (!sh || sh.type !== 'tb-editor') return;
   if (t.id === 'tbDate') sh.draft.date = t.value;
   if (t.id === 'tbMemo') sh.draft.memo = t.value;
+  return true;
+});
+
+/* --- 詳しく記録（各自のスマホで手札を入れ、ニッパーを1回ずつ記録する） ---
+   記録の形：players（席順）, firstNipper, roles{pid:陣営}, hands{ターン:{pid:{d,s,b}}}, cuts{番号:{r,by,from,card,at}}。
+   手札と役はゲームが終わるまで画面に出さない。終わった瞬間に status:'done' と teams/winner/how を書き、普通の記録として集計される。
+   n 人なら：解除 n 枚・ボム 1 枚・シーン 4n−1 枚。手札は 1〜4 ターン目に 5・4・3・2 枚、各ターン n 回切る。 */
+const TBD_CARD = {d:{name:'解除'}, s:{name:'シーン'}, b:{name:'ボム'}};
+const TBD_ME = 'kubota-tbd-me';
+const NIP = '<svg class="nip" viewBox="0 0 24 24" aria-label="ニッパー"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></g></svg>';
+const tbdSeen = {};  // 解除チップをめくる動きを、新しく出た分にだけ付けるため
+const tbdLive = () => matchesOf('timebomb').filter(m=>m.mode==='detail' && m.status==='live').sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+const tbdCuts = m => Object.keys(m.cuts||{}).map(Number).sort((a,b)=>a-b).map(i=>({i, ...m.cuts[i]}));
+function tbdMe(id){ try { return JSON.parse(lsGet(TBD_ME)||'{}')[id] || null; } catch(e){ return null; } }
+function tbdSetMe(id, pid){ let o = {}; try { o = JSON.parse(lsGet(TBD_ME)||'{}') || {}; } catch(e){} o[id] = pid; lsSet(TBD_ME, JSON.stringify(o)); }
+function tbdState(m){
+  const ids = m.players||[], n = ids.length, cuts = tbdCuts(m);
+  let found = 0, bomb = false, endAt = null;
+  for (const c of cuts){ if (c.card==='d') found++; if (c.card==='b') bomb = true; if (!endAt && (bomb || found >= n)) endAt = c; }
+  let r = 1;
+  while (r < 4 && cuts.filter(c=>c.r===r).length >= n) r++;
+  let winner = null, how = null;
+  if (bomb){ winner = 'bomber'; how = 'exploded'; }
+  else if (found >= n){ winner = 'police'; how = 'defused'; }
+  else if (r === 4 && cuts.filter(c=>c.r===4).length >= n){ const spy = ids.some(id=>(m.roles||{})[id]==='spy'); winner = spy ? 'spy' : 'bomber'; how = spy ? 'spytime' : 'timeout'; }
+  if (endAt) r = endAt.r;
+  const rc = cuts.filter(c=>c.r===r), h = (m.hands||{})[r] || {};
+  const entered = ids.filter(id=>h[id]);
+  const need = {d: n - cuts.filter(c=>c.r<r && c.card==='d').length, b: 1};
+  const sum = k => entered.reduce((a,id)=>a+(+h[id][k]||0), 0);
+  const allIn = entered.length === n;
+  // 合計だけを確かめる（誰の手札が違うかは出さない）
+  const bad = allIn && (sum('d') !== need.d || sum('b') !== need.b) ? {d: sum('d')-need.d, b: sum('b')-need.b} : null;
+  const phase = winner ? 'end' : (!allIn || bad) ? 'deal' : 'cut';
+  const last = cuts[cuts.length-1];
+  return {n, r, size: 6-r, cuts, rc, k: rc.length, found, bomb, winner, how, phase, h, entered, need, bad, nipper: last ? last.from : m.firstNipper};
+}
+
+/* --- 記録する：かんたん／詳しく --- */
+SHEETS['tb-mode'] = (sh, lv) => sheetFrame('タイムボムを記録', `<div class="modepick">
+    <button class="modebtn" type="button" data-act="tb-mode-simple">${shieldSVG()}<span><b>かんたん記録</b><small>ゲームが終わったあとに、誰がどの陣営で、どちらが勝ったかだけを入れます。</small></span></button>
+    <button class="modebtn" type="button" data-act="tb-mode-detail"><svg viewBox="0 0 40 40" aria-hidden="true">${bombGlyph()}</svg><span><b>詳しく記録</b><small>各自のスマホで、配られた手札と役をこっそり入力。ニッパーで切るたびに、誰の手札から何が出たかを記録します。</small></span></button>
+  </div>`, '', lv);
+
+/* --- 詳しく記録：はじめる前 --- */
+function tbdNewDraft(){
+  const last = sortByDate(matchesOf('timebomb')).slice(-1)[0], act = activePlayers().map(p=>p.id);
+  const order = last ? last.players.filter(id=>act.includes(id)) : act;
+  return {id:uid(), date:todayStr(), memo:'', order, first: order[0] || null, createdAt:Date.now()};
+}
+SHEETS['tbd-setup'] = (sh, lv) => {
+  const d = sh.draft, pm = playerMap(), n = d.order.length;
+  if (!d.order.includes(d.first)) d.first = d.order[0] || null;
+  const body = `
+    <div class="grid2">
+      <div class="field"><label for="tbdDate">日付</label><input class="inp" type="date" id="tbdDate" value="${esc(d.date)}"></div>
+      <div class="field"><label for="tbdMemo">メモ</label><input class="inp" id="tbdMemo" maxlength="40" placeholder="任意" value="${esc(d.memo)}"></div>
+    </div>
+    <div class="field"><span class="lbl">参加者（席の順に選ぶと見やすくなります）</span>
+      <div class="toggles">${playerPool(d.order).map(p=>`<button class="tg" type="button" data-act="tbd-toggle" data-id="${p.id}" aria-pressed="${d.order.includes(p.id)}">${avatar(p,true)}${esc(p.name)}${d.order.includes(p.id)?`<span class="seat">${d.order.indexOf(p.id)+1}</span>`:''}</button>`).join('')}</div>
+      <p class="hint">${n ? `${n}人：解除 <b>${n}枚</b>・ボム <b>1枚</b>・シーン <b>${Math.max(0,4*n-1)}枚</b>。手札は 5→4→3→2 枚、各ターン ${n}回 切ります。` : '参加者を選んでください。'}</p>
+    </div>
+    ${n ? `<div class="field"><span class="lbl">最初にニッパーを持つ人</span>
+      <div class="toggles">${d.order.map(id=>`<button class="tg" type="button" data-act="tbd-first" data-id="${id}" aria-pressed="${d.first===id}">${avatar(pm[id],true)}${esc(pm[id]?.name||'?')}</button>`).join('')}</div></div>` : ''}
+    <p class="note">はじめると、参加者それぞれが自分のスマホでこのゲームを開き、<b>自分の役と手札</b>を入れます。入れた内容は、ゲームが終わるまで誰にも見えません。</p>`;
+  const foot = `<button class="btn gold block" type="button" data-act="tbd-start" ${n>=3?'':'disabled'}>ゲームをはじめる</button>`;
+  return sheetFrame('タイムボムを詳しく記録', body, foot, lv);
+};
+
+/* --- 詳しく記録：プレイ中 --- */
+function tbdTop(m, st){
+  const prev = tbdSeen[m.id] ?? st.found; tbdSeen[m.id] = st.found;
+  const chips = Array.from({length:st.n}, (_,i)=>`<i class="tbd-chip${i<st.found?' on':''}${i<st.found && i>=prev?' flip':''}"></i>`).join('');
+  return `<div class="tbd-top">
+    <div class="tbd-chips" role="img" aria-label="解除 ${st.found}/${st.n}${st.bomb?'、ボム爆発':''}">${chips}<i class="tbd-bombchip${st.bomb?' on':''}"></i></div>
+    <div class="tbd-meta"><span>ターン <b>${st.r}</b>/4</span><span>手札 <b>${st.size}</b>枚</span><span>ニッパー <b>${st.k}</b>/${st.n}</span><span>解除 <b>${st.found}</b>/${st.n}</span></div>
+  </div>`;
+}
+function tbdWho(m){
+  const pm = playerMap();
+  return `<section class="card pad col"><div class="sec-head"><h2>この端末を使う人は？</h2></div>
+    <p class="hint" style="margin:0">自分の名前を選んでください。役と手札は、選んだ人の分だけを入れます。</p>
+    <div class="toggles">${m.players.map(id=>`<button class="tg" type="button" data-act="tbd-me" data-id="${m.id}" data-pid="${id}">${avatar(pm[id],true)}${esc(pm[id]?.name||'?')}</button>`).join('')}</div></section>`;
+}
+function tbdDeal(m, st, me, sh){
+  const pm = playerMap(), mine = st.h[me], r1 = st.r === 1;
+  let html = '';
+  if (!mine){
+    if (!sh.draft || sh.draft.r !== st.r || sh.draft.id !== m.id) sh.draft = {id:m.id, r:st.r, d:0, b:0, role:(m.roles||{})[me] || null};
+    const d = sh.draft, sc = st.size - d.d - d.b;
+    const row = (k, val, ctl) => `<div class="tbd-cnt"><span class="tcard ${k}">${TBD_CARD[k].name}</span><b>${TBD_CARD[k].name}</b>${ctl}</div>`;
+    const step = k => `<div class="mini"><button type="button" data-act="tbd-cnt" data-k="${k}" data-d="-1" aria-label="${TBD_CARD[k].name}を減らす">−</button><span class="num">${d[k]}</span><button type="button" data-act="tbd-cnt" data-k="${k}" data-d="1" aria-label="${TBD_CARD[k].name}を増やす">＋</button></div>`;
+    html += `<section class="card pad col tbd-mine">
+      <div class="sec-head"><h2>${esc(pm[me]?.name||'')}の${r1?'役と':''}手札</h2><span class="hint">ほかの人には見えません</span></div>
+      ${r1 ? `<div class="field"><span class="lbl">役</span><div class="tseg t3" role="group" aria-label="役">${['police','bomber','spy'].map(t=>`<button type="button" data-act="tbd-role" data-team="${t}" aria-pressed="${d.role===t}">${TB_TEAM[t].short}</button>`).join('')}</div></div>` : ''}
+      ${row('d', d.d, step('d'))}${row('b', d.b, step('b'))}${row('s', sc, `<div class="mini"><span></span><span class="num">${sc}</span><span></span></div>`)}
+      <p class="hint" style="margin:0">配られた <b>${st.size}枚</b> のうちわけ。シーンは残りの枚数が自動で入ります。</p>
+      <button class="btn gold block" type="button" data-act="tbd-hand" data-id="${m.id}" ${(!r1 || d.role) ? '' : 'disabled'}>決定する</button></section>`;
+  } else {
+    html += `<section class="card pad tbd-done"><b>✓ ${esc(pm[me]?.name||'')}の${r1?'役と':''}手札は入力済み</b><span class="hint">決めた内容は、ゲームが終わるまで誰にも見えません。</span>
+      <button class="btn sm" type="button" data-act="tbd-redo" data-id="${m.id}">入れ直す</button></section>`;
+  }
+  html += `<section class="card"><div class="sec-head" style="padding:12px 16px 4px"><h2>${st.r}ターン目の入力</h2><span class="hint">${st.entered.length}/${st.n}人</span></div>
+    ${m.players.map(id=>`<div class="res">${avatar(pm[id],true)}<div class="nm">${esc(pm[id]?.name||'?')}${id===me?'<small>この端末</small>':''}</div><div class="r">${st.h[id]?'<span class="pill ok">入力済み</span>':'<span class="pill flat">入力待ち</span>'}</div></div>`).join('')}</section>`;
+  if (st.bad){
+    const t = (k, v) => v ? `${TBD_CARD[k].name}が${Math.abs(v)}枚${v>0?'多い':'少ない'}` : '';
+    html += `<div class="banner err"><span><b>全員の合計が合いません（${[t('d',st.bad.d), t('b',st.bad.b)].filter(Boolean).join('、')}）。</b>誰かが数え間違えています。手札を数え直して入れ直してください。</span><button class="btn" type="button" data-act="tbd-redo-all" data-id="${m.id}">全員入れ直す</button></div>`;
+  }
+  if (st.r > 1 && !st.k) html += tbdUndoLink(m, '前のターンの最後の1回を取り消す');
+  return html;
+}
+function tbdCut(m, st, me, sh){
+  const pm = playerMap(), canCut = S.canWrite && (me === st.nipper || sh.proxy);
+  const rows = m.players.map(id=>{
+    const out = st.rc.filter(c=>c.from===id), left = st.size - out.length, tap = canCut && id !== st.nipper && left > 0;
+    const backs = Array.from({length:left}, ()=> tap
+      ? `<button class="tcard back" type="button" data-act="tbd-pick" data-id="${m.id}" data-pid="${id}" aria-label="${esc(pm[id]?.name)}のカードを切る"></button>`
+      : '<span class="tcard back"></span>').join('');
+    return `<div class="tbd-row${id===st.nipper?' nipr':''}">${avatar(pm[id],true)}<b>${esc(pm[id]?.name||'?')}${id===st.nipper?NIP:''}</b>
+      <div class="tcards">${backs}${out.map(c=>`<span class="tcard ${c.card} open">${TBD_CARD[c.card].name}</span>`).join('')}</div></div>`;
+  }).join('');
+  const msg = me === st.nipper
+    ? `<span><b>あなたがニッパーを持っています。</b>切った人の手札をタップして、出たカードを選んでください。</span>`
+    : `<span><b>${esc(pm[st.nipper]?.name||'?')}</b> がニッパーを持っています。${sh.proxy?'この端末からも記録できます。':''}</span><button class="btn ghost" type="button" data-act="tbd-proxy">${sh.proxy?'やめる':'代わりに記録'}</button>`;
+  return `<div class="banner">${msg}</div>
+    <section class="card tbd-board">${rows}</section>
+    <section class="card pad col"><div class="sec-head"><h2>${st.r}ターン目のニッパー</h2><span class="hint">${st.k}/${st.n}回</span></div>
+      ${st.k ? tbdLogList(st.rc) : '<p class="hint" style="margin:0">まだ切っていません。</p>'}
+      ${st.cuts.length ? tbdUndoLink(m, 'ひとつ戻す') : ''}</section>`;
+}
+function tbdLogList(rc){
+  const pm = playerMap();
+  return `<ol class="tbd-log">${rc.map((c,i)=>`<li><span class="no">${i+1}</span>${esc(pm[c.by]?.name||'?')}${NIP}${esc(pm[c.from]?.name||'?')}<span class="tcard sm ${c.card}">${TBD_CARD[c.card].name}</span></li>`).join('')}</ol>`;
+}
+const tbdUndoLink = (m, label) => S.canWrite ? `<div style="display:flex;justify-content:center"><button class="btn danger sm" type="button" data-act="tbd-undo" data-id="${m.id}">${label}</button></div>` : '';
+SHEETS['tbd-play'] = (sh, lv) => {
+  const m = data().matches.find(x=>x.id===sh.id);
+  if (!m) return sheetFrame('タイムボム', '<p class="note">このゲームは削除されました。</p>', '', lv);
+  if (m.status !== 'live') return SHEETS['timebomb-detail'](sh, lv);
+  const st = tbdState(m), me = tbdMe(m.id), meOk = me && m.players.includes(me), pm = playerMap();
+  let body = tbdTop(m, st);
+  if (!meOk) body += tbdWho(m);
+  else if (st.phase === 'deal') body += tbdDeal(m, st, me, sh);
+  else if (st.phase === 'cut') body += tbdCut(m, st, me, sh);
+  else body += `<section class="card pad col"><b>ゲームが終わりました</b><button class="btn gold" type="button" data-act="tbd-finish" data-id="${m.id}">結果をひらく</button></section>`;
+  const foot = `<div class="btn-row">${meOk?`<button class="btn" type="button" data-act="tbd-me-reset" data-id="${m.id}">使う人を変える</button>`:''}<button class="btn danger" type="button" data-act="tbd-abort" data-id="${m.id}">中止する</button></div>`;
+  return sheetFrame(`${st.r}ターン目<small>タイムボム ・ ${dlong(m.date)}</small>`, body, foot, lv, {tall:true, label:'タイムボム（詳しく記録）'});
+};
+SHEETS['tbd-cut'] = (sh, lv) => {
+  const m = data().matches.find(x=>x.id===sh.id), pm = playerMap();
+  if (!m || m.status !== 'live' || tbdCuts(m).length !== sh.k) return sheetFrame('ニッパー', '<p class="note">ほかの端末で先に記録されました。閉じてください。</p>', '', lv);
+  const body = `<p class="hint" style="margin:0">${esc(pm[sh.by]?.name||'')} が ${esc(pm[sh.pid]?.name||'')} の手札を切りました。めくって出たカードは？</p>
+    <div class="cutpick">${['d','s','b'].map(k=>`<button class="${k}" type="button" data-act="tbd-card" data-k="${k}"><span class="tcard ${k}">${TBD_CARD[k].name}</span>${TBD_CARD[k].name}</button>`).join('')}</div>`;
+  return sheetFrame(`${esc(pm[sh.pid]?.name||'')} の手札から`, body, '', lv);
+};
+/* 終わったゲームの詳細：ターンごとの手札と、切られたカード */
+function tbdReplay(m){
+  const pm = playerMap(), cuts = tbdCuts(m);
+  const rounds = [1,2,3,4].filter(r=>(m.hands||{})[r] || cuts.some(c=>c.r===r));
+  const reopen = S.canWrite && cuts.length ? `<div style="display:flex;justify-content:center"><button class="btn danger sm" type="button" data-act="tbd-reopen" data-id="${m.id}">最後の1回を取り消してゲームに戻る</button></div>` : '';
+  return `<div class="sec-head"><h2>ターンごとの記録</h2><span class="hint">配られた手札と、切られたカード</span></div>
+    ${rounds.map(r=>{ const h = (m.hands||{})[r] || {}, rc = cuts.filter(c=>c.r===r);
+      return `<section class="card pad col"><div class="sec-head"><h2 style="font-size:15px">${r}ターン目</h2><span class="hint">手札 ${6-r}枚</span></div>
+        <table class="rule tbd-tbl"><thead><tr><th></th><th>配られた</th><th>切られた</th></tr></thead><tbody>
+        ${m.players.map(id=>{ const x = h[id], out = rc.filter(c=>c.from===id);
+          const over = x && ['d','s','b'].some(k=>out.filter(c=>c.card===k).length > (+x[k]||0));
+          return `<tr><td>${esc(pm[id]?.name||'?')}</td><td>${x ? ['d','b','s'].map(k=>`<span class="hc ${k}">${TBD_CARD[k].name} ${x[k]}</span>`).join(' ') : '—'}</td>
+            <td>${out.map(c=>`<span class="tcard sm ${c.card}">${TBD_CARD[c.card].name}</span>`).join(' ')}${over?' <span class="pill warn">入力と違う</span>':''}</td></tr>`; }).join('')}
+        </tbody></table>
+        ${rc.length ? tbdLogList(rc) : ''}</section>`; }).join('')}
+    ${reopen}`;
+}
+function tbLiveCards(){
+  const ls = tbdLive(); if (!ls.length) return '';
+  const pm = playerMap();
+  return `<section class="card">${ls.map(m=>{ const st = tbdState(m);
+    return `<button class="game" data-act="open-match" data-id="${m.id}" type="button">${datebox(m.date)}
+      <div class="mid"><div class="line"><span class="pill live">記録中</span><span class="stack">${m.players.slice(0,6).map(id=>avatar(pm[id],true)).join('')}</span>${m.players.length}人</div>
+        <div class="memo">${st.r}ターン目 ・ ${st.phase==='deal'?`手札の入力 ${st.entered.length}/${st.n}`:`ニッパー ${st.k}/${st.n}`} ・ 解除 ${st.found}/${st.n}</div></div></button>`; }).join('')}</section>`;
+}
+// 終わったら、記録を普通のタイムボムの結果としても読めるようにする（teams・winner・how）
+function tbdEndFields(m){
+  const st = tbdState(m); if (!st.winner) return null;
+  return {status:'done', winner:st.winner, how:st.how, teams:{...(m.roles||{})}, updatedAt:Date.now()};
+}
+Object.assign(ACT, {
+  'tbd-resume': () => { const m = tbdLive()[0]; if (m) openSheet({type:'tbd-play', id:m.id, ro:true}); },
+  'tbd-toggle': b => { const d = topSheet().draft, id = b.dataset.id; d.order = d.order.includes(id) ? d.order.filter(x=>x!==id) : [...d.order, id]; renderSheets(); },
+  'tbd-first': b => { topSheet().draft.first = b.dataset.id; renderSheets(); },
+  'tbd-start': async () => {
+    const d = topSheet().draft;
+    if (!d.date) return toast('日付を入れてください');
+    if (d.order.length < 3) return toast('参加者を3人以上選んでください');
+    const obj = {id:d.id, game:'timebomb', mode:'detail', date:d.date, memo:d.memo.trim(), players:[...d.order], firstNipper:d.first || d.order[0],
+      status:'live', roles:{}, hands:{}, cuts:{}, createdAt:d.createdAt, updatedAt:Date.now()};
+    S.sheets = []; document.body.style.overflow='';
+    try { await write('matches', obj); } catch(e){ renderSheets(); return; }
+    openSheet({type:'tbd-play', id:obj.id, ro:true});
+  },
+  'tbd-me': b => { tbdSetMe(b.dataset.id, b.dataset.pid); renderSheets(); },
+  'tbd-me-reset': b => { tbdSetMe(b.dataset.id, null); const sh = topSheet(); if (sh) sh.draft = null; renderSheets(); },
+  'tbd-role': b => { topSheet().draft.role = b.dataset.team; renderSheets(); },
+  'tbd-cnt': b => {
+    const sh = topSheet(), d = sh.draft, m = data().matches.find(x=>x.id===sh.id); if (!d || !m) return;
+    const st = tbdState(m), k = b.dataset.k, max = k === 'b' ? 1 : st.need.d;
+    d[k] = Math.max(0, Math.min(max, d[k] + (+b.dataset.d), st.size - (k==='d' ? d.b : d.d)));
+    renderSheets();
+  },
+  'tbd-hand': async b => {
+    const sh = topSheet(), d = sh.draft, id = b.dataset.id, m = data().matches.find(x=>x.id===id), me = tbdMe(id); if (!d || !m || !me) return;
+    const st = tbdState(m);
+    if (st.r === 1 && !d.role) return toast('役を選んでください');
+    const set = {[`hands.${st.r}.${me}`]: {d:d.d, s:st.size-d.d-d.b, b:d.b}, updatedAt:Date.now()};
+    if (st.r === 1) set[`roles.${me}`] = d.role;
+    sh.draft = null;
+    try { await patchDoc('matches', id, set, [`hands.${st.r}.${me}`]); toast('決定しました（ほかの人には見えません）'); } catch(e){}
+  },
+  'tbd-redo': async b => {
+    const id = b.dataset.id, m = data().matches.find(x=>x.id===id), me = tbdMe(id); if (!m || !me) return;
+    const st = tbdState(m);
+    if (st.phase === 'cut' || st.k) return toast('もう切りはじめているので入れ直せません');
+    const set = {[`hands.${st.r}.${me}`]: null};
+    if (st.r === 1) set[`roles.${me}`] = null;
+    try { await patchDoc('matches', id, set); } catch(e){}
+  },
+  'tbd-redo-all': b => arm(b, 'もう一度タップで全員やり直し', async ()=>{
+    const id = b.dataset.id, m = data().matches.find(x=>x.id===id); if (!m) return;
+    try { await patchDoc('matches', id, {[`hands.${tbdState(m).r}`]: null}); toast('全員の手札を消しました。もう一度入れてください'); } catch(e){}
+  }),
+  'tbd-proxy': () => { const sh = topSheet(); sh.proxy = !sh.proxy; renderSheets(); },
+  'tbd-pick': b => {
+    const m = data().matches.find(x=>x.id===b.dataset.id); if (!m) return;
+    const st = tbdState(m); if (st.phase !== 'cut') return;
+    openSheet({type:'tbd-cut', id:m.id, pid:b.dataset.pid, by:st.nipper, k:st.cuts.length, ro:true});
+  },
+  'tbd-card': async b => {
+    const sh = topSheet(), m = data().matches.find(x=>x.id===sh.id); if (!m) return;
+    const st = tbdState(m);
+    S.sheets.pop(); renderSheets();
+    if (st.phase !== 'cut' || st.cuts.length !== sh.k) return toast('ほかの端末で先に記録されました');
+    const c = {r:st.r, by:sh.by, from:sh.pid, card:b.dataset.k, at:Date.now()};
+    const set = {[`cuts.${sh.k}`]: c, updatedAt:Date.now()};
+    const end = tbdEndFields({...m, cuts:{...(m.cuts||{}), [sh.k]: c}});
+    if (end) Object.assign(set, end);
+    try {
+      await patchDoc('matches', m.id, set, [`cuts.${sh.k}`]);
+      if (end){ toast(`${TB_TEAM[end.winner].name}の勝ち！ 役と手札をオープンします`); coins(); }
+      else if (c.card === 'd') toast(`解除！ ${st.found+1}/${st.n}`);
+      else if (st.k + 1 >= st.n) toast(`${st.r}ターン目が終わりました。配り直して、手札を入れてください`);
+    } catch(e){}
+  },
+  'tbd-undo': b => arm(b, 'もう一度タップで取り消す', async ()=>{
+    const id = b.dataset.id, m = data().matches.find(x=>x.id===id); if (!m) return;
+    const last = tbdCuts(m).slice(-1)[0]; if (!last) return;
+    try { await patchDoc('matches', id, {[`cuts.${last.i}`]: null}, [`cuts.${last.i+1}`]); toast('ひとつ戻しました'); } catch(e){}
+  }),
+  'tbd-reopen': b => arm(b, 'もう一度タップでゲームに戻る', async ()=>{
+    const id = b.dataset.id, m = data().matches.find(x=>x.id===id); if (!m) return;
+    const last = tbdCuts(m).slice(-1)[0]; if (!last) return;
+    try {
+      await patchDoc('matches', id, {[`cuts.${last.i}`]: null, status:'live', winner:null, how:null, teams:null, updatedAt:Date.now()}, [`cuts.${last.i+1}`]);
+      S.sheets = []; renderSheets(); openSheet({type:'tbd-play', id, ro:true});
+    } catch(e){}
+  }),
+  'tbd-finish': async b => {
+    const id = b.dataset.id, m = data().matches.find(x=>x.id===id), end = m && tbdEndFields(m); if (!end) return;
+    try { await patchDoc('matches', id, end); } catch(e){}
+  },
+  'tbd-abort': b => arm(b, 'もう一度タップで中止', async ()=>{ S.sheets=[]; document.body.style.overflow=''; renderSheets(); try{ await remove('matches', b.dataset.id); toast('中止しました'); }catch(e){} }),
+});
+ONINPUT.push(t => {
+  const sh = topSheet(); if (!sh || sh.type !== 'tbd-setup') return;
+  if (t.id === 'tbdDate') sh.draft.date = t.value;
+  if (t.id === 'tbdMemo') sh.draft.memo = t.value;
   return true;
 });
 
@@ -2658,6 +3028,7 @@ window.addEventListener('orientationchange', () => setTimeout(fixViewportGap, 30
 ACT['open-match'] = b => {
   const m = data().matches.find(x=>x.id===b.dataset.id); if (!m) return;
   if (m.game === 'skull' && m.status === 'live' && S.canWrite) return skOpenPlay(m.id);
+  if (m.game === 'timebomb' && m.mode === 'detail' && m.status === 'live') return openSheet({type:'tbd-play', id:m.id, ro:true});
   openSheet({type: m.game + '-detail', id: m.id, ro: true});
 };
 async function boot(){
