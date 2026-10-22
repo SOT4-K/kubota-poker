@@ -1,6 +1,6 @@
 {
-  "name": "PokerLog",
-  "short_name": "PokerLog",
+  "name": "ボドゲ管理アプリ",
+  "short_name": "ボドゲ管理アプリ",
   "description": "家族のポーカー収支を記録・共有するアプリ",
   "lang": "ja",
   "start_url": "./",

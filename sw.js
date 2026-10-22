@@ -1,6 +1,6 @@
 // アプリ本体だけを端末に保存して、電波が弱くてもすぐ開けるようにする。
 // 記録データ（スプレッドシートへの通信）はキャッシュしない。
-const CACHE = 'kubota-poker-v1';
+const CACHE = 'kubota-poker-v2';
 const SHELL = ['./', './index.html', './config.js', './manifest.webmanifest',
   './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png'];
 
