@@ -1289,29 +1289,44 @@ function heroPoker({games, pot, last}){
     </g></svg></div>`;
 }
 /* 表彰台：勝利数の上位3人（ランキングと同じ並び・同じ順位）。記録が増えるたびに描き直される */
-const PODIUM = [{x:240, h:56, slot:0}, {x:187, h:44, slot:1}, {x:293, h:34, slot:2}];
-const MEDAL = ['#ffd23f', '#c9d2e3', '#d08a4a'];
+const PODIUM = [{x:240, h:60, slot:0}, {x:187, h:46, slot:1}, {x:293, h:36, slot:2}];
+// 金・銀・銅：[暗い縁, 明るい帯, 地の色, 文字]
+const MEDAL = [['#9a6f08','#fff1b0','#ffd23f','#3a2600'], ['#6f7889','#ffffff','#c9d2e3','#1e2533'], ['#7a4318','#ffd2a6','#d08a4a','#2e1606']];
+const tbStar = (cx, cy, r, cls='') => `<path${cls?` class="${cls}"`:''} d="M${cx} ${cy-r}Q${cx} ${cy} ${cx+r} ${cy}Q${cx} ${cy} ${cx} ${cy+r}Q${cx} ${cy} ${cx-r} ${cy}Q${cx} ${cy} ${cx} ${cy-r}z" fill="#fff6c9"/>`;
 function heroTimebomb({top, n}){
   const base = 136, w = 50;
+  const grads = MEDAL.map(([d, l, m], i) => `<linearGradient id="pd${i}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${d}"/><stop offset=".3" stop-color="${l}"/><stop offset=".55" stop-color="${m}"/><stop offset="1" stop-color="${d}"/></linearGradient>`).join('');
   const blocks = PODIUM.map(({x, h, slot}) => {
-    const p = top[slot], y = base - h, cx = x + w/2;
-    if (!p) return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="none" stroke="#2a3553" stroke-width="1.5" stroke-dasharray="4 3"/>
-      <text x="${cx}" y="${y + 22}" text-anchor="middle" font-size="14" fill="#2a3553">—</text>`;
-    const medal = MEDAL[Math.min(p.rank, 3) - 1];
-    const name = [...p.name].length > 5 ? [...p.name].slice(0,4).join('') + '…' : p.name;
-    return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="#161d30" stroke="#2a3553" stroke-width="1.2"/>
-      <rect x="${x}" y="${y}" width="${w}" height="4" rx="2" fill="${medal}"/>
-      <text x="${cx}" y="${y + 23}" text-anchor="middle" font-size="18" fill="${medal}">${p.wins}<tspan font-size="10" fill="#a9b3c9">勝</tspan></text>
-      <circle cx="${cx}" cy="${y - 17}" r="12" fill="${esc(p.color)}" stroke="${medal}" stroke-width="2"/>
+    const p = top[slot], y = base - h, cx = x + w/2, big = [24, 20, 17][slot];
+    if (!p) return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="#121829" stroke="#2a3553" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="${cx}" y="${y + big + 4}" text-anchor="middle" font-size="${big}" fill="#2a3553" class="t-disp">${slot + 1}</text>`;
+    const mi = Math.min(p.rank, 3) - 1, [dark, light, mid, ink] = MEDAL[mi];
+    const name = [...p.name].length > 4 ? [...p.name].slice(0,3).join('') + '…' : p.name;  // 台の幅に収まるのは4文字まで
+    const ny = y + big + 4;
+    return `<path d="M${x} ${y}L${x + 4} ${y - 5}H${x + w - 4}L${x + w} ${y}z" fill="${light}" opacity=".9"/>
+      <rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#pd${mi})"/>
+      <rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="${dark}" stroke-width="1"/>
+      <text x="${cx + .8}" y="${ny + .8}" text-anchor="middle" font-size="${big}" fill="#fff" opacity=".45" class="t-disp">${p.rank}</text>
+      <text x="${cx}" y="${ny}" text-anchor="middle" font-size="${big}" fill="${ink}" class="t-disp">${p.rank}</text>
+      <text x="${cx}" y="${ny + 11}" text-anchor="middle" font-size="9" fill="${ink}" opacity=".85">${p.wins}勝</text>
+      ${mi === 0 ? `<circle cx="${cx}" cy="${y - 17}" r="19" fill="${mid}" opacity=".18"/>` : ''}
+      <circle cx="${cx}" cy="${y - 17}" r="12" fill="${esc(p.color)}" stroke="${mid}" stroke-width="2.4"/>
       <text x="${cx}" y="${y - 12.5}" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" class="t-disp">${esc([...p.name][0] || '?')}</text>
       <text x="${cx}" y="${y - 34}" text-anchor="middle" font-size="10" fill="#e9edf6" class="t-disp">${esc(name)}</text>
       ${p.rank === 1 ? `<g transform="translate(${cx - 8} ${y - 62}) scale(.67)" style="color:#ffd23f">${CROWN.replace(/<\/?svg[^>]*>/g, '')}</g>` : ''}`;
   }).join('');
+  const lit = top.length > 0;
+  const confetti = lit ? [[196,30,'#ff4b3e',20],[186,48,'#4c8dff',-30],[227,26,'#ffd23f',45],[306,28,'#a970ff',-15],[346,42,'#5ee0a0',30],[338,34,'#ff7a30',-40],[286,22,'#4c8dff',10],[338,80,'#ffd23f',-20]]
+    .map(([x, y, c, r]) => `<rect x="${x}" y="${y}" width="3" height="6" rx="1" fill="${c}" opacity=".85" transform="rotate(${r} ${x + 1.5} ${y + 3})"/>`).join('') : '';
+  const glam = lit ? `<polygon points="206,0 218,0 262,76 238,76" fill="#fff2b0" opacity=".07"/><polygon points="314,0 326,0 242,76 268,76" fill="#fff2b0" opacity=".07"/>
+    <ellipse cx="265" cy="137" rx="86" ry="5" fill="#000" opacity=".45"/>${confetti}
+    ${tbStar(237, 36, 5, 'spark')}${tbStar(303, 40, 4, 'spark')}${tbStar(292, 50, 3)}${tbStar(234, 70, 2.5)}` : '';
   const label = top.length ? top.map(p => `${p.rank}位 ${p.name} ${p.wins}勝`).join('、') : 'まだ記録がありません';
   return `<div class="hero"><svg viewBox="0 0 360 150" role="img" aria-label="タイムボムの上位3人：${esc(label)}">
     <defs>
       <pattern id="hz" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="14" fill="#ffd23f"/><rect x="7" width="7" height="14" fill="#11151f"/></pattern>
       <radialGradient id="bm" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#3a4257"/><stop offset="1" stop-color="#0d1019"/></radialGradient>
+      ${grads}
     </defs>
     <rect width="360" height="150" fill="#0e1322"/>
     <g stroke="#4c8dff" stroke-opacity=".08">${Array.from({length:17},(_,i)=>`<path d="M${i*22} 0V150"/>`).join('')}${Array.from({length:7},(_,i)=>`<path d="M0 ${i*22}H360"/>`).join('')}</g>
@@ -1331,6 +1346,7 @@ function heroTimebomb({top, n}){
     </g>
     <text x="187" y="18" font-size="10" fill="#ff7a30" letter-spacing="2" class="t-eye">TOP 3</text>
     <text x="343" y="18" text-anchor="end" font-size="10" fill="#7882a0" letter-spacing="1">${n} GAMES</text>
+    ${glam}
     ${blocks}
   </svg></div>`;
 }
