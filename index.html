@@ -26,7 +26,7 @@
   --ink:#f2eadb; --ink-2:#b9c7bd; --ink-3:#83998e;
   --accent:#d8b46a; --accent-2:#f1d9a0; --accent-ink:#2a1f08;
   --win:#63d7a0; --loss:#ff8a7a; --warn:#f2c14e;
-  --police:#4c8dff; --bomber:#ff4b3e;
+  --police:#4c8dff; --bomber:#ff4b3e; --spy:#a970ff;
   --paper:#ead9b4; --paper-2:#f3e6c8; --paper-ink:#2b1d12; --paper-line:#c2a676;
   --bar:rgba(9,26,21,.92);
   --bg-art:radial-gradient(120% 60% at 50% -10%, rgba(64,140,108,.28), transparent 60%),radial-gradient(90% 50% at 50% 110%, rgba(0,0,0,.45), transparent 70%);
@@ -167,6 +167,9 @@ main{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;oversc
 .hero .t-eye{font-family:var(--f-eyebrow)}
 .spark{transform-box:fill-box;transform-origin:center;animation:spark 1.1s ease-in-out infinite}
 @keyframes spark{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.25) rotate(18deg)}}
+/* デジタル時計のコロン：その場で点滅するだけ */
+.tick{animation:tick 1s steps(1) infinite}
+@keyframes tick{50%{opacity:.2}}
 .flag{transform-box:fill-box;transform-origin:left center;animation:wave 3.6s ease-in-out infinite}
 @keyframes wave{0%,100%{transform:skewY(0)}50%{transform:skewY(-3deg)}}
 .bob{animation:bob 4s ease-in-out infinite}
@@ -232,6 +235,7 @@ main{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;oversc
 .pill.ok{background:color-mix(in srgb,var(--win) 12%,transparent);color:var(--win)}
 .pill.first{background:color-mix(in srgb,var(--accent) 17%,transparent);color:var(--accent-2)}
 .pill.police{background:color-mix(in srgb,var(--police) 18%,transparent);color:#9cc0ff}
+.pill.spy{background:color-mix(in srgb,var(--spy) 18%,transparent);color:#d2b6ff}
 .pill.bomber{background:color-mix(in srgb,var(--bomber) 18%,transparent);color:#ff9d93}
 .pill.live{background:var(--loss);color:#fff}
 .pill.live::before{content:"";width:6px;height:6px;border-radius:50%;background:#fff;animation:blink 1.2s infinite}
@@ -442,16 +446,19 @@ details.arch summary{cursor:pointer;color:var(--ink-3);font-size:13px;font-weigh
 .teams{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
 .team{background:var(--s1);padding:12px 12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0;position:relative}
 .team h4{margin:0;font-family:var(--f-display);font-weight:400;font-size:14px;display:flex;align-items:center;gap:6px}
-.team.police h4{color:#9cc0ff} .team.bomber h4{color:#ff9d93}
+.team.police h4{color:#9cc0ff} .team.bomber h4{color:#ff9d93} .team.spy h4{color:#d2b6ff}
 .team.won{background:linear-gradient(180deg,color-mix(in srgb,var(--tc) 22%,var(--s1)),var(--s1))}
 .team.won::after{content:"WIN";position:absolute;top:10px;right:10px;font-family:var(--f-num);font-size:12px;letter-spacing:.14em;color:var(--bg);background:var(--tc);padding:1px 7px;border-radius:3px;transform:rotate(4deg)}
-.team.police{--tc:var(--police)} .team.bomber{--tc:var(--bomber)}
+.team.police{--tc:var(--police)} .team.bomber{--tc:var(--bomber)} .team.spy{--tc:var(--spy)}
+.teams.t3,.winpick.t3,.tseg.t3{grid-template-columns:repeat(3,1fr)}
+.tseg.t3 button{padding:7px 2px;font-size:12px}
 .team .m{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;min-width:0}
 .team .m span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .team.lost .m{opacity:.6}
 .tseg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:3px;border-radius:var(--r-sm);background:var(--bg);border:1px solid var(--line)}
 .tseg button{border:0;background:none;border-radius:4px;padding:7px 6px;font-weight:700;font-size:13px;color:var(--ink-3)}
 .tseg button[aria-pressed="true"][data-team="police"]{background:var(--police);color:#fff}
+.tseg button[aria-pressed="true"][data-team="spy"]{background:var(--spy);color:#fff}
 .tseg button[aria-pressed="true"][data-team="bomber"]{background:var(--bomber);color:#fff}
 .prow{display:grid;grid-template-columns:28px minmax(0,1fr) 168px;gap:10px;align-items:center;padding:8px 0}
 .prow+.prow{border-top:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
@@ -460,14 +467,14 @@ details.arch summary{cursor:pointer;color:var(--ink-3);font-size:13px;font-weigh
 .winbtn{border:1.5px solid var(--line);background:var(--bg);border-radius:var(--r);padding:14px 10px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:700;color:var(--ink-2)}
 .winbtn svg{width:42px;height:42px}
 .winbtn[aria-pressed="true"]{border-color:var(--tc);background:color-mix(in srgb,var(--tc) 18%,var(--bg));color:var(--ink);box-shadow:0 0 0 3px color-mix(in srgb,var(--tc) 25%,transparent)}
-.winbtn.police{--tc:var(--police)} .winbtn.bomber{--tc:var(--bomber)}
+.winbtn.police{--tc:var(--police)} .winbtn.bomber{--tc:var(--bomber)} .winbtn.spy{--tc:var(--spy)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chipbtn{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 12px;font-weight:700;font-size:13px;color:var(--ink-2)}
 .chipbtn[aria-pressed="true"]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent-2)}
 .strip{display:flex;flex-wrap:wrap;gap:4px}
 .sq{width:18px;height:18px;border-radius:3px;border:2px solid var(--tc);background:transparent}
 .sq.w{background:var(--tc)}
-.sq.police{--tc:var(--police)} .sq.bomber{--tc:var(--bomber)}
+.sq.police{--tc:var(--police)} .sq.bomber{--tc:var(--bomber)} .sq.spy{--tc:var(--spy)}
 
 /* catan */
 .vp{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 16px}
@@ -553,9 +560,9 @@ details.arch summary{cursor:pointer;color:var(--ink-3);font-size:13px;font-weigh
 
 /* additions */
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--tc);margin-right:5px;vertical-align:middle}
-.dot.police{--tc:var(--police)} .dot.bomber{--tc:var(--bomber)}
+.dot.police{--tc:var(--police)} .dot.bomber{--tc:var(--bomber)} .dot.spy{--tc:var(--spy)}
 .tbwin{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:var(--r);border:1px solid var(--tc);background:linear-gradient(135deg,color-mix(in srgb,var(--tc) 24%,var(--s1)),var(--s1))}
-.tbwin.police{--tc:var(--police)} .tbwin.bomber{--tc:var(--bomber)}
+.tbwin.police{--tc:var(--police)} .tbwin.bomber{--tc:var(--bomber)} .tbwin.spy{--tc:var(--spy)}
 .tbwin svg{width:48px;height:48px;flex:none}
 .tbwin b{display:block;font-family:var(--f-display);font-weight:400;font-size:20px}
 .tbwin small{display:block;color:var(--ink-2);font-size:12px}
@@ -1275,8 +1282,8 @@ function heroPoker({games, pot, last}){
       <text x="0" y="116" font-size="12" fill="#b9c7bd" class="t-disp">最終プレイ</text><text x="170" y="118" text-anchor="end" font-size="20" font-weight="700" fill="#f1d9a0">${last?dshort(last):'—'}</text>
     </g></svg></div>`;
 }
-function heroTimebomb({pw, bw, n}){
-  return `<div class="hero"><svg viewBox="0 0 360 150" role="img" aria-label="タイムポリス ${pw}勝、ボマー団 ${bw}勝">
+function heroTimebomb({pw, bw, sw, n}){
+  return `<div class="hero"><svg viewBox="0 0 360 150" role="img" aria-label="タイムポリス ${pw}勝、ボマー団 ${bw}勝${sw?`、スパイ ${sw}勝`:''}">
     <defs>
       <pattern id="hz" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="14" fill="#ffd23f"/><rect x="7" width="7" height="14" fill="#11151f"/></pattern>
       <radialGradient id="bm" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#3a4257"/><stop offset="1" stop-color="#0d1019"/></radialGradient>
@@ -1301,9 +1308,9 @@ function heroTimebomb({pw, bw, n}){
     <text x="198" y="50" font-size="11" fill="#9cc0ff" class="t-disp">タイムポリス</text>
     <text x="328" y="50" text-anchor="end" font-size="11" fill="#ff9d93" class="t-disp">ボマー団</text>
     <text x="232" y="98" text-anchor="middle" font-size="46" fill="#4c8dff">${String(pw).padStart(2,'0')}</text>
-    <text x="263" y="94" text-anchor="middle" font-size="38" fill="#ff7a30" class="spark">:</text>
+    <text x="263" y="94" text-anchor="middle" font-size="38" fill="#ff7a30" class="tick">:</text>
     <text x="294" y="98" text-anchor="middle" font-size="46" fill="#ff4b3e">${String(bw).padStart(2,'0')}</text>
-    <text x="263" y="113" text-anchor="middle" font-size="10" fill="#7882a0" letter-spacing="2">${n} GAMES</text>
+    <text x="263" y="113" text-anchor="middle" font-size="10" fill="#7882a0" letter-spacing="2">${n} GAMES${sw?` / <tspan fill="#d2b6ff">SPY ${sw}</tspan>`:''}</text>
   </svg></div>`;
 }
 const TERR = {
@@ -1873,25 +1880,36 @@ document.addEventListener('change', ev => {
 });
 
 /* ================= TIME BOMB ================= */
-const TB_TEAM = {police:{name:'タイムポリス', short:'ポリス'}, bomber:{name:'ボマー団', short:'ボマー'}};
+const TB_TEAM = {police:{name:'タイムポリス', short:'ポリス'}, bomber:{name:'ボマー団', short:'ボマー'}, spy:{name:'スパイ', short:'スパイ'}};
 const TB_HOW = {
   defused:{label:'全解除', team:'police', note:'解除カードをすべて見つけた'},
   exploded:{label:'ボム爆発', team:'bomber', note:'ボムのカードがめくられた'},
   timeout:{label:'時間切れ', team:'bomber', note:'4ラウンドが終わっても解除しきれなかった'},
+  spytime:{label:'時間切れ', team:'spy', note:'ボムも爆発せず、解除もされなかった'},
 };
+const TB_HOW_DEFAULT = {police:'defused', bomber:'exploded', spy:'spytime'};
+// スパイがいるゲームでは、時間切れはボマーではなくスパイの勝ち
+const tbHasSpy = (order, teams) => order.some(id=>teams[id]==='spy');
+const tbSides = (order, teams) => tbHasSpy(order, teams) ? ['police','bomber','spy'] : ['police','bomber'];
+const tbHowOk = (k, winner, spy) => TB_HOW[k].team === winner && !(k === 'timeout' && spy);
 const TB_COMP = {4:[3,2,'5枚から4枚を配る'],5:[3,2,''],6:[4,2,''],7:[5,3,'8枚から7枚を配る'],8:[5,3,'']};
-const tbIcon = team => team === 'police' ? shieldSVG() : `<svg viewBox="0 0 40 40" aria-hidden="true">${bombGlyph('#3a1512')}</svg>`;
+const tbIcon = team => team === 'police' ? shieldSVG() : team === 'spy' ? spySVG() : `<svg viewBox="0 0 40 40" aria-hidden="true">${bombGlyph('#3a1512')}</svg>`;
+function spySVG(){ return `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 23h16c0 7-3.6 11.5-8 11.5S12 30 12 23z" fill="#e9d9c6"/>
+  <rect x="12.6" y="24.4" width="6.4" height="4.2" rx="1.6" fill="#111"/><rect x="21" y="24.4" width="6.4" height="4.2" rx="1.6" fill="#111"/><path d="M19 26.2h2" stroke="#111" stroke-width="1.3"/>
+  <path d="M11 21.5c0-6.5 2-12 4.2-12 2 0 3 2 4.8 2s2.8-2 4.8-2c2.2 0 4.2 5.5 4.2 12z" fill="#2a1f3d"/><rect x="11.2" y="17.2" width="17.6" height="3" fill="#a970ff"/>
+  <path d="M5 22h30" stroke="#2a1f3d" stroke-width="3.4" stroke-linecap="round"/></svg>`; }
 
 RESULT.timebomb = m => (m.players||[]).map(pid=>({pid, team:(m.teams||{})[pid], win:(m.teams||{})[pid]===m.winner}));
 const tbAn = () => wlAnalyze('timebomb');
 function tbTeamStats(s){
-  const t = {police:{g:0,w:0}, bomber:{g:0,w:0}};
+  const t = {police:{g:0,w:0}, bomber:{g:0,w:0}, spy:{g:0,w:0}};
   (s?.hist||[]).forEach(h=>{ if (t[h.team]){ t[h.team].g++; if (h.win) t[h.team].w++; } });
   return t;
 }
 function tbTeams(m){
   const pm = playerMap();
-  return `<div class="teams">${['police','bomber'].map(team=>{
+  const sides = tbSides(m.players||[], m.teams||{});
+  return `<div class="teams${sides.length>2?' t3':''}">${sides.map(team=>{
     const ids = (m.players||[]).filter(id=>m.teams[id]===team);
     return `<div class="team ${team} ${m.winner===team?'won':'lost'}"><h4>${TB_TEAM[team].name}</h4>
       ${ids.map(id=>`<div class="m">${avatar(pm[id],true)}<span>${esc(pm[id]?.name||'（削除済み）')}</span></div>`).join('') || '<span class="hint">なし</span>'}</div>`;
@@ -1907,13 +1925,14 @@ function tbMatchCard(m, title='最新のゲーム'){
 VIEWS.timebomb = {
   home(){
     const an = tbAn();
-    const pw = an.ms.filter(m=>m.winner==='police').length, bw = an.ms.length - pw;
+    const wins = t => an.ms.filter(m=>m.winner===t).length;
+    const anySpy = an.ms.some(m=>tbHasSpy(m.players||[], m.teams||{}));
     const latest = an.ms[an.ms.length-1];
     return `${demoBanner()}
-      ${heroTimebomb({pw, bw, n:an.ms.length})}
+      ${heroTimebomb({pw:wins('police'), bw:wins('bomber'), sw:wins('spy'), n:an.ms.length})}
       ${pageHead('Leaderboard','勝利数ランキング')}
-      ${wlBoard(an, (id,s)=>{ const t=tbTeamStats(s); return `<span class="tbside" title="ポリスで${t.police.w}勝・ボマーで${t.bomber.w}勝"><span><i class="dot police"></i>${t.police.w}</span><span><i class="dot bomber"></i>${t.bomber.w}</span></span>`; }) || ''}
-      <p class="hint" style="margin:-10px 2px 0"><i class="dot police"></i>ポリスでの勝ち数　<i class="dot bomber"></i>ボマーでの勝ち数</p>
+      ${wlBoard(an, (id,s)=>{ const t=tbTeamStats(s); return `<span class="tbside" title="ポリスで${t.police.w}勝・ボマーで${t.bomber.w}勝${t.spy.g?`・スパイで${t.spy.w}勝`:''}"><span><i class="dot police"></i>${t.police.w}</span><span><i class="dot bomber"></i>${t.bomber.w}</span>${t.spy.g?`<span><i class="dot spy"></i>${t.spy.w}</span>`:''}</span>`; }) || ''}
+      <p class="hint" style="margin:-10px 2px 0"><i class="dot police"></i>ポリスでの勝ち数　<i class="dot bomber"></i>ボマーでの勝ち数${anySpy?'　<i class="dot spy"></i>スパイでの勝ち数':''}</p>
       ${latest ? tbMatchCard(latest) : `<section class="card pad"><p class="note">まだ記録がありません。ゲームが終わったら「記録する」で、誰がどちらの陣営で、どちらが勝ったかを入れてください。</p></section>`}`;
   },
   history(){
@@ -1925,7 +1944,7 @@ VIEWS.timebomb = {
         return `<button class="game" data-act="open-match" data-id="${m.id}" type="button">${datebox(m.date)}
           <div class="mid">
             <div class="line"><span class="pill ${m.winner}">${TB_TEAM[m.winner]?.short}の勝ち</span>${TB_HOW[m.how]?.label||''}</div>
-            <div class="line"><span class="stack">${ids('police').map(id=>avatar(pm[id],true)).join('')}</span><span style="color:var(--ink-3)">vs</span><span class="stack">${ids('bomber').map(id=>avatar(pm[id],true)).join('')}</span></div>
+            <div class="line">${tbSides(m.players||[], m.teams||{}).map(t=>`<span class="stack">${ids(t).map(id=>avatar(pm[id],true)).join('')}</span>`).join('<span style="color:var(--ink-3)">vs</span>')}</div>
             ${m.memo?`<div class="memo">${esc(m.memo)}</div>`:''}
           </div>
           <div class="end"><small>人数</small><b>${(m.players||[]).length}</b></div></button>`;
@@ -1937,7 +1956,8 @@ VIEWS.timebomb = {
       cell: (m, r) => `<td class="${r.win?'cell-win':''}"><i class="dot ${r.team}"></i>${r.win?'勝':'負'}</td>`,
       kv: (id, s) => { const t = tbTeamStats(s); return [
         ['参加', s.games+'回'], ['勝率', pct(s.rate)], ['最長連勝', s.bestRun+'連勝'],
-        ['ポリス時', t.police.g ? `${t.police.w}/${t.police.g}勝` : '—'], ['ボマー時', t.bomber.g ? `${t.bomber.w}/${t.bomber.g}勝` : '—'], ['ボマー率', pct(t.bomber.g/(s.games||1))]]; },
+        ['ポリス時', t.police.g ? `${t.police.w}/${t.police.g}勝` : '—'], ['ボマー時', t.bomber.g ? `${t.bomber.w}/${t.bomber.g}勝` : '—'],
+        t.spy.g ? ['スパイ時', `${t.spy.w}/${t.spy.g}勝`] : ['ボマー率', pct(t.bomber.g/(s.games||1))]]; },
       pchart: (id, s) => `<div><div class="lbl" style="margin-bottom:8px">これまでの戦績（色は陣営、塗りつぶしは勝ち）</div>
         <div class="strip">${s.hist.map(h=>`<span class="sq ${h.team} ${h.win?'w':'l'}" title="${dshort(h.m.date)} ${TB_TEAM[h.team]?.short} ${h.win?'勝ち':'負け'}"></span>`).join('')}</div></div>`,
     });
@@ -1951,7 +1971,7 @@ RULES.timebomb = () => `<section class="card pad col">
   <div class="sec-head"><h2>人数と陣営</h2></div>
   <table class="rule"><thead><tr><th>人数</th><th>タイムポリス</th><th>ボマー団</th><th></th></tr></thead>
   <tbody>${Object.entries(TB_COMP).map(([n,[p,b,note]])=>`<tr><td class="n" style="text-align:left">${n}人</td><td class="n" style="text-align:left;color:#9cc0ff">${p}枚</td><td class="n" style="text-align:left;color:#ff9d93">${b}枚</td><td class="hint">${note}</td></tr>`).join('')}</tbody></table>
-  <p class="note"><b>ポリスの勝ち</b>：解除カードをすべて見つける。<br><b>ボマーの勝ち</b>：ボムがめくられる、または4ラウンドで解除しきれない。</p></section>`;
+  <p class="note"><b>ポリスの勝ち</b>：解除カードをすべて見つける。<br><b>ボマーの勝ち</b>：ボムがめくられる、または4ラウンドで解除しきれない。<br><b>スパイの勝ち</b>：ボムも爆発せず、解除もされない（スパイがいるときの時間切れは、ボマーではなくスパイの勝ち）。</p></section>`;
 EXPORT.timebomb = () => {
   const pm = playerMap(), out = [['日付','メモ','勝利陣営','決着','プレイヤー','陣営','勝敗']];
   sortByDate(matchesOf('timebomb')).forEach(m => (m.players||[]).forEach(id => out.push([m.date, m.memo||'', TB_TEAM[m.winner]?.name, TB_HOW[m.how]?.label, pm[id]?.name||'', TB_TEAM[m.teams[id]]?.name, m.teams[id]===m.winner?'勝ち':'負け'])));
@@ -1991,7 +2011,8 @@ function tbNewDraft(){
 SHEETS['tb-editor'] = (sh, lv) => {
   const d = sh.draft, pm = playerMap(), n = d.order.length;
   const comp = TB_COMP[n];
-  const np = d.order.filter(id=>d.teams[id]==='police').length, nb = n - np;
+  const cnt = t => d.order.filter(id=>d.teams[id]===t).length, np = cnt('police'), nb = cnt('bomber'), ns = cnt('spy');
+  const spy = ns > 0, sides = tbSides(d.order, d.teams);
   const body = `
     <div class="grid2">
       <div class="field"><label for="tbDate">日付</label><input class="inp" type="date" id="tbDate" value="${esc(d.date)}"></div>
@@ -2003,24 +2024,25 @@ SHEETS['tb-editor'] = (sh, lv) => {
     </div>
     <div class="field"><span class="lbl">それぞれの陣営</span>
       <div>${d.order.map(id=>`<div class="prow">${avatar(pm[id],true)}<b>${esc(pm[id]?.name||'?')}</b>
-        <div class="tseg" role="group" aria-label="${esc(pm[id]?.name)}の陣営">${['police','bomber'].map(t=>`<button type="button" data-act="tb-team" data-id="${id}" data-team="${t}" aria-pressed="${d.teams[id]===t}">${TB_TEAM[t].short}</button>`).join('')}</div></div>`).join('')}</div>
+        <div class="tseg t3" role="group" aria-label="${esc(pm[id]?.name)}の陣営">${['police','bomber','spy'].map(t=>`<button type="button" data-act="tb-team" data-id="${id}" data-team="${t}" aria-pressed="${d.teams[id]===t}">${TB_TEAM[t].short}</button>`).join('')}</div></div>`).join('')}</div>
     </div>
     <div class="field"><span class="lbl">勝った陣営</span>
-      <div class="winpick">${['police','bomber'].map(t=>`<button class="winbtn ${t}" type="button" data-act="tb-win" data-team="${t}" aria-pressed="${d.winner===t}">${tbIcon(t)}${TB_TEAM[t].name}</button>`).join('')}</div>
+      <div class="winpick${sides.length>2?' t3':''}">${sides.map(t=>`<button class="winbtn ${t}" type="button" data-act="tb-win" data-team="${t}" aria-pressed="${d.winner===t}">${tbIcon(t)}${TB_TEAM[t].name}</button>`).join('')}</div>
     </div>
-    ${d.winner ? `<div class="field"><span class="lbl">決着</span><div class="chips">${Object.entries(TB_HOW).filter(([k,v])=>v.team===d.winner).map(([k,v])=>`<button class="chipbtn" type="button" data-act="tb-how" data-how="${k}" aria-pressed="${d.how===k}">${v.label}</button>`).join('')}</div></div>` : ''}`;
-  const foot = `<div class="hint" style="text-align:center">ポリス <b>${np}人</b> ・ ボマー <b>${nb}人</b>${d.winner?` ・ <b>${TB_TEAM[d.winner].short}</b>の勝ち`:''}</div>
+    ${d.winner ? `<div class="field"><span class="lbl">決着</span><div class="chips">${Object.entries(TB_HOW).filter(([k])=>tbHowOk(k, d.winner, spy)).map(([k,v])=>`<button class="chipbtn" type="button" data-act="tb-how" data-how="${k}" aria-pressed="${d.how===k}">${v.label}</button>`).join('')}</div></div>` : ''}`;
+  const foot = `<div class="hint" style="text-align:center">ポリス <b>${np}人</b> ・ ボマー <b>${nb}人</b>${spy?` ・ スパイ <b>${ns}人</b>`:''}${d.winner?` ・ <b>${TB_TEAM[d.winner].short}</b>の勝ち`:''}</div>
     <button class="btn gold block" type="button" data-act="tb-save">保存する</button>`;
   return sheetFrame(d.isNew ? 'タイムボムを記録' : 'タイムボムを編集', body, foot, lv);
 };
 async function tbSave(d){
   if (!d.date) return toast('日付を入れてください');
   if (d.order.length < 2) return toast('参加者を2人以上選んでください');
-  const nb = d.order.filter(id=>d.teams[id]==='bomber').length;
-  if (!nb || nb === d.order.length) return toast('ポリスとボマーの両方に1人以上いるようにしてください');
-  if (!d.winner) return toast('勝った陣営を選んでください');
+  const has = t => d.order.some(id=>d.teams[id]===t), spy = has('spy');
+  if (!has('police') || !has('bomber')) return toast('ポリスとボマーの両方に1人以上いるようにしてください');
+  if (!d.winner || (d.winner==='spy' && !spy)) return toast('勝った陣営を選んでください');
+  if (!d.how || !tbHowOk(d.how, d.winner, spy)) d.how = TB_HOW_DEFAULT[d.winner];
   const obj = {id:d.id, game:'timebomb', date:d.date, memo:d.memo.trim(), players:[...d.order],
-    teams:Object.fromEntries(d.order.map(id=>[id, d.teams[id]])), winner:d.winner, how:d.how || (d.winner==='police'?'defused':'exploded'),
+    teams:Object.fromEntries(d.order.map(id=>[id, d.teams[id]])), winner:d.winner, how:d.how,
     status:'done', createdAt:d.createdAt, updatedAt:Date.now()};
   S.sheets = []; document.body.style.overflow='';
   try { await write('matches', obj); } catch(e){ renderSheets(); return; }
@@ -2035,12 +2057,18 @@ Object.assign(ACT, {
   'tb-del': b => arm(b, 'もう一度タップで削除', async ()=>{ S.sheets=[]; document.body.style.overflow=''; renderSheets(); try{ await remove('matches', b.dataset.id); toast('削除しました'); }catch(e){} }),
   'tb-toggle': b => { const d = topSheet().draft, id = b.dataset.id;
     if (d.order.includes(id)) d.order = d.order.filter(x=>x!==id); else { d.order.push(id); if (!d.teams[id]) d.teams[id] = 'police'; }
-    renderSheets(); },
-  'tb-team': b => { topSheet().draft.teams[b.dataset.id] = b.dataset.team; renderSheets(); },
-  'tb-win': b => { const d = topSheet().draft; d.winner = b.dataset.team; if (!d.how || TB_HOW[d.how].team !== d.winner) d.how = d.winner==='police' ? 'defused' : 'exploded'; renderSheets(); },
+    tbFixWinner(d); renderSheets(); },
+  'tb-team': b => { const d = topSheet().draft; d.teams[b.dataset.id] = b.dataset.team; tbFixWinner(d); renderSheets(); },
+  'tb-win': b => { const d = topSheet().draft; d.winner = b.dataset.team; if (!d.how || !tbHowOk(d.how, d.winner, tbHasSpy(d.order, d.teams))) d.how = TB_HOW_DEFAULT[d.winner]; renderSheets(); },
   'tb-how': b => { topSheet().draft.how = b.dataset.how; renderSheets(); },
   'tb-save': () => tbSave(topSheet().draft),
 });
+// 陣営を変えたあと、勝者や決着が成り立たなくなっていたら直す（スパイがいなくなった・スパイが加わって時間切れがボマーの勝ちでなくなった）
+function tbFixWinner(d){
+  const spy = tbHasSpy(d.order, d.teams);
+  if (d.winner === 'spy' && !spy){ d.winner = null; d.how = null; }
+  else if (d.winner && d.how && !tbHowOk(d.how, d.winner, spy)) d.how = TB_HOW_DEFAULT[d.winner];
+}
 ONINPUT.push(t => {
   const sh = topSheet(); if (!sh || sh.type !== 'tb-editor') return;
   if (t.id === 'tbDate') sh.draft.date = t.value;
