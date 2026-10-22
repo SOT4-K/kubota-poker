@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>ボドゲ管理アプリ</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
@@ -87,6 +87,8 @@
 }
 
 *{box-sizing:border-box}
+/* ボタンを素早く2回押しても拡大しない（ダブルタップのズームを止める。スクロールはそのまま） */
+*{touch-action:manipulation}
 [hidden]{display:none!important}
 html{background:var(--bg)}
 html,body{min-height:100%}
@@ -167,9 +169,6 @@ main{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;oversc
 .hero .t-eye{font-family:var(--f-eyebrow)}
 .spark{transform-box:fill-box;transform-origin:center;animation:spark 1.1s ease-in-out infinite}
 @keyframes spark{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.25) rotate(18deg)}}
-/* デジタル時計のコロン：その場で点滅するだけ */
-.tick{animation:tick 1s steps(1) infinite}
-@keyframes tick{50%{opacity:.2}}
 .flag{transform-box:fill-box;transform-origin:left center;animation:wave 3.6s ease-in-out infinite}
 @keyframes wave{0%,100%{transform:skewY(0)}50%{transform:skewY(-3deg)}}
 .bob{animation:bob 4s ease-in-out infinite}
@@ -920,6 +919,13 @@ function wlOrder(an){
   const pm = playerMap();
   return Object.keys(an.st).filter(id=>pm[id]).sort((a,b)=> an.st[b].wins-an.st[a].wins || an.st[b].rate-an.st[a].rate || an.st[b].games-an.st[a].games || (pm[a].createdAt||0)-(pm[b].createdAt||0));
 }
+function wlTop3(an){
+  const pm = playerMap();
+  let rank = 0, prev = null;
+  return wlOrder(an).filter(id=>an.st[id].wins>0).slice(0,3).map((id,i)=>{ const s = an.st[id], key = s.wins + ':' + s.rate;
+    if (key !== prev){ rank = i+1; prev = key; }
+    return {name:pm[id].name, color:pm[id].color, wins:s.wins, rank}; });
+}
 function streakPill(s){
   if (!s || s.streak < 2 || s.streakWin == null) return '';
   return `<span class="pill ${s.streakWin?'up':'down'}">${s.streak}${s.streakWin?'連勝中':'連敗中'}</span>`;
@@ -1282,8 +1288,27 @@ function heroPoker({games, pot, last}){
       <text x="0" y="116" font-size="12" fill="#b9c7bd" class="t-disp">最終プレイ</text><text x="170" y="118" text-anchor="end" font-size="20" font-weight="700" fill="#f1d9a0">${last?dshort(last):'—'}</text>
     </g></svg></div>`;
 }
-function heroTimebomb({pw, bw, sw, n}){
-  return `<div class="hero"><svg viewBox="0 0 360 150" role="img" aria-label="タイムポリス ${pw}勝、ボマー団 ${bw}勝${sw?`、スパイ ${sw}勝`:''}">
+/* 表彰台：勝利数の上位3人（ランキングと同じ並び・同じ順位）。記録が増えるたびに描き直される */
+const PODIUM = [{x:240, h:56, slot:0}, {x:187, h:44, slot:1}, {x:293, h:34, slot:2}];
+const MEDAL = ['#ffd23f', '#c9d2e3', '#d08a4a'];
+function heroTimebomb({top, n}){
+  const base = 136, w = 50;
+  const blocks = PODIUM.map(({x, h, slot}) => {
+    const p = top[slot], y = base - h, cx = x + w/2;
+    if (!p) return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="none" stroke="#2a3553" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="${cx}" y="${y + 22}" text-anchor="middle" font-size="14" fill="#2a3553">—</text>`;
+    const medal = MEDAL[Math.min(p.rank, 3) - 1];
+    const name = [...p.name].length > 5 ? [...p.name].slice(0,4).join('') + '…' : p.name;
+    return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="#161d30" stroke="#2a3553" stroke-width="1.2"/>
+      <rect x="${x}" y="${y}" width="${w}" height="4" rx="2" fill="${medal}"/>
+      <text x="${cx}" y="${y + 23}" text-anchor="middle" font-size="18" fill="${medal}">${p.wins}<tspan font-size="10" fill="#a9b3c9">勝</tspan></text>
+      <circle cx="${cx}" cy="${y - 17}" r="12" fill="${esc(p.color)}" stroke="${medal}" stroke-width="2"/>
+      <text x="${cx}" y="${y - 12.5}" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" class="t-disp">${esc([...p.name][0] || '?')}</text>
+      <text x="${cx}" y="${y - 34}" text-anchor="middle" font-size="10" fill="#e9edf6" class="t-disp">${esc(name)}</text>
+      ${p.rank === 1 ? `<g transform="translate(${cx - 8} ${y - 62}) scale(.67)" style="color:#ffd23f">${CROWN.replace(/<\/?svg[^>]*>/g, '')}</g>` : ''}`;
+  }).join('');
+  const label = top.length ? top.map(p => `${p.rank}位 ${p.name} ${p.wins}勝`).join('、') : 'まだ記録がありません';
+  return `<div class="hero"><svg viewBox="0 0 360 150" role="img" aria-label="タイムボムの上位3人：${esc(label)}">
     <defs>
       <pattern id="hz" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="14" fill="#ffd23f"/><rect x="7" width="7" height="14" fill="#11151f"/></pattern>
       <radialGradient id="bm" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#3a4257"/><stop offset="1" stop-color="#0d1019"/></radialGradient>
@@ -1291,11 +1316,11 @@ function heroTimebomb({pw, bw, sw, n}){
     <rect width="360" height="150" fill="#0e1322"/>
     <g stroke="#4c8dff" stroke-opacity=".08">${Array.from({length:17},(_,i)=>`<path d="M${i*22} 0V150"/>`).join('')}${Array.from({length:7},(_,i)=>`<path d="M0 ${i*22}H360"/>`).join('')}</g>
     <rect y="138" width="360" height="12" fill="url(#hz)" opacity=".55"/>
-    <path d="M112 104 C140 120 150 70 178 88" fill="none" stroke="#ff4b3e" stroke-width="4" stroke-linecap="round"/>
+    <path d="M112 104 C140 120 150 96 187 104" fill="none" stroke="#ff4b3e" stroke-width="4" stroke-linecap="round"/>
     <path d="M110 112 C138 136 150 104 162 110" fill="none" stroke="#4c8dff" stroke-width="4" stroke-linecap="round"/>
-    <path d="M168 112 C172 114 175 110 178 108" fill="none" stroke="#4c8dff" stroke-width="4" stroke-linecap="round"/>
+    <path d="M168 112 C174 115 180 115 187 114" fill="none" stroke="#4c8dff" stroke-width="4" stroke-linecap="round"/>
     <circle cx="163" cy="110.5" r="2.2" fill="#d38b4a"/><circle cx="167.5" cy="112" r="2.2" fill="#d38b4a"/>
-    <path d="M106 118 C130 148 160 128 178 124" fill="none" stroke="#ffd23f" stroke-width="4" stroke-linecap="round"/>
+    <path d="M106 118 C130 148 160 128 187 126" fill="none" stroke="#ffd23f" stroke-width="4" stroke-linecap="round"/>
     <g class="bob">
       <circle cx="74" cy="84" r="44" fill="url(#bm)" stroke="#05070c" stroke-width="3"/>
       <ellipse cx="58" cy="64" rx="13" ry="7" fill="#fff" opacity=".18" transform="rotate(-38 58 64)"/>
@@ -1304,13 +1329,9 @@ function heroTimebomb({pw, bw, sw, n}){
       <path class="spark" d="M140 2l3 7.4 7.8.9-6 5.2 2 7.6-6.8-4.2-6.8 4.2 2-7.6-6-5.2 7.8-.9z" fill="#ffb02e"/>
       <circle cx="140" cy="12" r="12" fill="#ff7a30" opacity=".22" class="spark"/>
     </g>
-    <rect x="182" y="30" width="162" height="88" rx="6" fill="#05070c" stroke="#2a3553" stroke-width="1.5"/>
-    <text x="198" y="50" font-size="11" fill="#9cc0ff" class="t-disp">タイムポリス</text>
-    <text x="328" y="50" text-anchor="end" font-size="11" fill="#ff9d93" class="t-disp">ボマー団</text>
-    <text x="232" y="98" text-anchor="middle" font-size="46" fill="#4c8dff">${String(pw).padStart(2,'0')}</text>
-    <text x="263" y="94" text-anchor="middle" font-size="38" fill="#ff7a30" class="tick">:</text>
-    <text x="294" y="98" text-anchor="middle" font-size="46" fill="#ff4b3e">${String(bw).padStart(2,'0')}</text>
-    <text x="263" y="113" text-anchor="middle" font-size="10" fill="#7882a0" letter-spacing="2">${n} GAMES${sw?` / <tspan fill="#d2b6ff">SPY ${sw}</tspan>`:''}</text>
+    <text x="187" y="18" font-size="10" fill="#ff7a30" letter-spacing="2" class="t-eye">TOP 3</text>
+    <text x="343" y="18" text-anchor="end" font-size="10" fill="#7882a0" letter-spacing="1">${n} GAMES</text>
+    ${blocks}
   </svg></div>`;
 }
 const TERR = {
@@ -1925,11 +1946,10 @@ function tbMatchCard(m, title='最新のゲーム'){
 VIEWS.timebomb = {
   home(){
     const an = tbAn();
-    const wins = t => an.ms.filter(m=>m.winner===t).length;
     const anySpy = an.ms.some(m=>tbHasSpy(m.players||[], m.teams||{}));
     const latest = an.ms[an.ms.length-1];
     return `${demoBanner()}
-      ${heroTimebomb({pw:wins('police'), bw:wins('bomber'), sw:wins('spy'), n:an.ms.length})}
+      ${heroTimebomb({top:wlTop3(an), n:an.ms.length})}
       ${pageHead('Leaderboard','勝利数ランキング')}
       ${wlBoard(an, (id,s)=>{ const t=tbTeamStats(s); return `<span class="tbside" title="ポリスで${t.police.w}勝・ボマーで${t.bomber.w}勝${t.spy.g?`・スパイで${t.spy.w}勝`:''}"><span><i class="dot police"></i>${t.police.w}</span><span><i class="dot bomber"></i>${t.bomber.w}</span>${t.spy.g?`<span><i class="dot spy"></i>${t.spy.w}</span>`:''}</span>`; }) || ''}
       <p class="hint" style="margin:-10px 2px 0"><i class="dot police"></i>ポリスでの勝ち数　<i class="dot bomber"></i>ボマーでの勝ち数${anySpy?'　<i class="dot spy"></i>スパイでの勝ち数':''}</p>
@@ -2600,6 +2620,11 @@ ONINPUT.push(t => {
   if (t.id === 'skMemo') sh.draft.memo = t.value;
   return true;
 });
+
+/* ================= no zoom =================
+   iPhone の Safari は user-scalable=no を無視するので、ピンチ操作そのものを止める。 */
+['gesturestart','gesturechange','gestureend'].forEach(t => document.addEventListener(t, e => e.preventDefault(), {passive:false}));
+document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, {passive:false});
 
 /* ================= viewport gap =================
    iPhone のホーム画面から開いたとき、表示領域が画面より短く測られ、下のタブの下に余白ができることがある。
